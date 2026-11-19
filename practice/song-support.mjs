@@ -1,5 +1,5 @@
 // Distinguish inspected maps from uncertain guides and publisher video scores.
-import { ESTIMATED_COURSES } from './estimated-courses.mjs?v=46';
+import { ESTIMATED_COURSES } from './estimated-courses.mjs?v=47';
 export const SANSHIN_LYRIC_SCORES=['tinsagu','tsukinu','aha'];
 // Every requested song has a lyric-score route. Only these native studies
 // promise note-by-note microphone following; other routes use the teacher video.

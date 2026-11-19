@@ -98,7 +98,7 @@ await assert.rejects(()=>readLyricFile({size:80001,text:async()=>{throw new Erro
 await assert.rejects(()=>readLyricFile({size:20001,text:async()=> 'x'.repeat(20001)}),/2万字/);
 await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\0binary'}),/UTF-8/);
 await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\uFFFD'}),/UTF-8/);
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['lyric-notes.mjs?v=46','songs/learning-provenance.json','progress.mjs?v=46','songs/tokiyo-study.json','session.css?v=46','lyrics.mjs?v=46','lyric-presets.mjs?v=46','songs/lyrics-provenance.json','polyphonic.mjs?v=46'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['lyric-notes.mjs?v=47','songs/learning-provenance.json','progress.mjs?v=47','songs/tokiyo-study.json','session.css?v=47','lyrics.mjs?v=47','lyric-presets.mjs?v=47','songs/lyrics-provenance.json','polyphonic.mjs?v=47'])assert.ok(sw.includes(path),path);
 
 const ahaData=ahaMidi(),ahaModel=parseMidi(ahaData),ahaScore=scoreNotes(ahaModel,ahaModel.groups[0].id,'sanshin').notes,aha=LYRIC_PRESETS['song:aha'];
 assert.deepEqual(Buffer.from(ahaData),readFileSync('practice/songs/aha.mid'),'The generated elementary Aha score is reproducible');

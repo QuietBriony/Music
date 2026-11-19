@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { readFirstSong, FIRST_SONGS } from '../practice/first-song.mjs';
 
 const source = readFileSync('practice/sw.js', 'utf8');
-function fixture({ htmlVersion = '46' } = {}) {
+function fixture({ htmlVersion = '47' } = {}) {
   const listeners = {}, stores = new Map();
   let clients = [{ id: 'one', url: 'https://example.test/practice/' }], network = 0, skipped = 0;
   const key = request => typeof request === 'string' ? request : request.url;
@@ -12,7 +12,7 @@ function fixture({ htmlVersion = '46' } = {}) {
     if (!stores.has(name)) stores.set(name, new Map());
     const entries = stores.get(name);
     return { async match(request) { const stored = entries.get(key(request)), copy = stored?.clone(); if (stored?.redirected) Object.defineProperty(copy, 'redirected', { value: true }); return copy; },
-      async addAll(requests) { for (const request of requests) { const response = new Response(new URL(request.url).pathname.match(/practice\/(index.html)?$/) ? `<meta name="practice-version" content="${htmlVersion}">` : 'snapshot:' + request.url); if (request.url.endsWith('/index.html')) Object.defineProperty(response, 'redirected', { value: true }); entries.set(key(request), response); } },
+      async addAll(requests) { for (const request of requests) { const response = new Response(new URL(request.url).pathname.match(/practice\/((index|terms|privacy).html)?$/) ? `<meta name="practice-version" content="${htmlVersion}">` : 'snapshot:' + request.url); if (/\/(index|terms|privacy)\.html$/.test(request.url)) Object.defineProperty(response, 'redirected', { value: true }); entries.set(key(request), response); } },
       async put(request, response) { entries.set(key(request), response); } };
   };
   const caches = { open: async name => cacheFor(name), keys: async () => [...stores.keys()], delete: async name => stores.delete(name) };
@@ -29,33 +29,44 @@ const f = fixture();
 await (await f.caches.open('music-practice-v30')).put('https://example.test/practice/app.mjs?v=30', new Response('old-module'));
 await f.caches.open('unrelated-root-cache');
 await f.fire('install'); assert.equal(f.skipped(), 0, 'Installing an update does not interrupt practice');
-assert.equal((await (await f.caches.open('music-practice-v46')).match('https://example.test/practice/index.html')).redirected, false, 'Install repairs redirected HTML without changing its content');
+assert.equal((await (await f.caches.open('music-practice-v47')).match('https://example.test/practice/index.html')).redirected, false, 'Install repairs redirected HTML without changing its content');
 await f.fire('activate'); assert.ok(f.stores.has('music-practice-v30'), 'Activation preserves modules used by other tabs');
 for (const path of ['/?practice-update=40', '/index.html?from=home', '/index.html#reading-help']) {
   const response = await f.fire('fetch', { request: { url: 'https://example.test/practice' + path, method: 'GET', mode: 'navigate' } });
   assert.equal(response.redirected, false, 'Cached navigation never returns a followed redirect');
-  assert.match(await response.text(), /content="46"/, 'Navigation gets the installed HTML, including queries and fragments');
+  assert.match(await response.text(), /content="47"/, 'Navigation gets the installed HTML, including queries and fragments');
 }
-const redirected = new Response('<meta name="practice-version" content="46">'); Object.defineProperty(redirected, 'redirected', { value: true });
-await (await f.caches.open('music-practice-v46')).put('https://example.test/practice/index.html', redirected);
+const redirected = new Response('<meta name="practice-version" content="47">'); Object.defineProperty(redirected, 'redirected', { value: true });
+await (await f.caches.open('music-practice-v47')).put('https://example.test/practice/index.html', redirected);
 const repaired = await f.fire('fetch', { request: { url: 'https://example.test/practice/', method: 'GET', mode: 'navigate' } });
-assert.equal(repaired.redirected, false); assert.match(await repaired.text(), /content="46"/, 'Fetch also repairs an existing redirected navigation response');
-const asset = await f.fire('fetch', { request: { url: 'https://example.test/practice/app.mjs?v=46', method: 'GET', mode: 'cors' } });
+assert.equal(repaired.redirected, false); assert.match(await repaired.text(), /content="47"/, 'Fetch also repairs an existing redirected navigation response');
+for(const name of ['terms','privacy']){
+ const cache=await f.caches.open('music-practice-v47'),url=`https://example.test/practice/${name}.html`;
+ assert.equal((await cache.match(url)).redirected,false,'Install normalizes Cloudflare policy redirects');
+ const policy=new Response(`<h1>${name} policy</h1>`,{headers:{'Content-Type':'text/html; charset=utf-8'}});Object.defineProperty(policy,'redirected',{value:true});await cache.put(url,policy);
+ for(const suffix of [`${name}.html`,name,`${name}.html?from=info#read`,`${name}?v=46`]){
+  const response=await f.fire('fetch',{request:{url:'https://example.test/practice/'+suffix,method:'GET',mode:'navigate'}});
+  assert.equal(response.redirected,false,'Policy navigation never returns a followed redirect');
+  assert.equal(await response.text(),`<h1>${name} policy</h1>`,'HTML/canonical/query policy links return their own document, not the app shell');
+  assert.match(response.headers.get('Content-Type'),/text\/html/);
+ }
+}
+const asset = await f.fire('fetch', { request: { url: 'https://example.test/practice/app.mjs?v=47', method: 'GET', mode: 'cors' } });
 assert.match(await asset.text(), /snapshot:/); assert.equal(f.network(), 0, 'A live deployment cannot mix new JS with installed HTML');
 const previous = await f.fire('fetch', { request: { url: 'https://example.test/practice/app.mjs?v=30', method: 'GET', mode: 'cors' } });
 assert.equal(await previous.text(), 'old-module', 'An older open tab gets its matching module');
 for (const request of [{ url: 'https://example.test/private', method: 'GET', mode: 'cors' }, { url: 'https://example.test/practice/', method: 'POST', mode: 'cors' }]) assert.equal(await f.fire('fetch', { request }), undefined);
-let reported; await f.fire('message', { data: { type: 'PRACTICE_VERSION' }, ports: [{ postMessage: value => { reported = value.version; } }] }); assert.equal(reported, '46');
+let reported; await f.fire('message', { data: { type: 'PRACTICE_VERSION' }, ports: [{ postMessage: value => { reported = value.version; } }] }); assert.equal(reported, '47');
 await f.fire('message', { data: { type: 'PRACTICE_ACTIVATE' }, ports: [] }); assert.equal(f.skipped(), 1, 'Activation needs the explicit update command');
 f.setClients([{ id: 'one', url: 'https://example.test/practice/' }, { id: 'two', url: 'https://example.test/practice/index.html' }]);
-await f.fire('message', { data: { type: 'PRACTICE_CLEAN', version: '46' }, source: { id: 'one' }, ports: [] }); assert.ok(f.stores.has('music-practice-v30'));
+await f.fire('message', { data: { type: 'PRACTICE_CLEAN', version: '47' }, source: { id: 'one' }, ports: [] }); assert.ok(f.stores.has('music-practice-v30'));
 f.setClients([{ id: 'one', url: 'https://example.test/practice/' }]);
 await f.fire('message', { data: { type: 'PRACTICE_CLEAN', version: '30' }, source: { id: 'one' }, ports: [] }); assert.ok(f.stores.has('music-practice-v30'), 'An old document cannot clean newer caches');
-await f.fire('message', { data: { type: 'PRACTICE_CLEAN', version: '46' }, source: { id: 'one' }, ports: [] });
-assert.ok(!f.stores.has('music-practice-v30')); assert.ok(f.stores.has('music-practice-v46')); assert.ok(f.stores.has('unrelated-root-cache'));
+await f.fire('message', { data: { type: 'PRACTICE_CLEAN', version: '47' }, source: { id: 'one' }, ports: [] });
+assert.ok(!f.stores.has('music-practice-v30')); assert.ok(f.stores.has('music-practice-v47')); assert.ok(f.stores.has('unrelated-root-cache'));
 const stale = fixture({ htmlVersion: '30' }); await stale.caches.open('music-practice-v30');
 await assert.rejects(() => stale.fire('install'), /Incomplete practice release/);
-assert.ok(!stale.stores.has('music-practice-v46')); assert.ok(stale.stores.has('music-practice-v30')); assert.equal(stale.skipped(), 0);
+assert.ok(!stale.stores.has('music-practice-v47')); assert.ok(stale.stores.has('music-practice-v30')); assert.equal(stale.skipped(), 0);
 assert.deepEqual(readFirstSong(null), { guitar: { step: 0 }, sanshin: { step: 0 } });
 assert.deepEqual(readFirstSong({ guitar: { step: 3 }, sanshin: { step: -1 }, injected: true }), { guitar: { step: 3 }, sanshin: { step: 0 } });
 assert.equal(readFirstSong({ guitar: { step: '3' } }).guitar.step, 0);
@@ -67,7 +78,7 @@ const updateSource=readFileSync('practice/app-update.mjs','utf8').replace(/^expo
 async function offlineBoot({active=true,rejected=false,disappeared=false}={}){
  const nodes=Object.fromEntries(['offline-state','practice-update','practice-update-now'].map(id=>[id,{textContent:'PWAを準備中',hidden:true}]));
  class Channel{constructor(){this.port1={close(){}};this.port2={reply:data=>this.port1.onmessage?.({data})};}}
- const controller=active?{postMessage(message,ports){if(disappeared)throw Error('Worker no longer active');if(message.type==='PRACTICE_VERSION')ports[0].reply({version:'46'});}}:null;
+ const controller=active?{postMessage(message,ports){if(disappeared)throw Error('Worker no longer active');if(message.type==='PRACTICE_VERSION')ports[0].reply({version:'47'});}}:null;
  const serviceWorker={controller,addEventListener(){},register(){return rejected?Promise.reject(Error('Offline')):new Promise(()=>{});}};
  vm.runInNewContext(updateSource+'\nmountPracticeUpdates({onPause(){}});',{document:{getElementById:id=>nodes[id]},navigator:{serviceWorker},window:{isSecureContext:true},MessageChannel:Channel,setTimeout,clearTimeout});
  await new Promise(resolve=>setImmediate(resolve));return nodes['offline-state'].textContent;
@@ -79,10 +90,10 @@ assert.equal(await offlineBoot({disappeared:true,rejected:true}),'オンライ�
 console.log('Practice offline boot: pending/rejected registration, ready controller and disappearing worker PASS');
 
 // Exercise the application lifecycle, not just service-worker cache contents.
-function appFixture({online=true,remote='46',status=200}={}){
+function appFixture({online=true,remote='47',status=200}={}){
  const ids=['offline-state','practice-update','practice-update-now','practice-update-label','practice-app-version','practice-info-version','practice-info-dialog','practice-info-close','practice-update-check','practice-update-result','practice-reload'];
  const nodes=Object.fromEntries(ids.map(id=>[id,{textContent:'',hidden:true,disabled:false,open:false,click(){return this.onclick?.();},showModal(){this.open=true;},close(){this.open=false;}}]));
- const events={},docEvents={},strip={dataset:{}},trigger={};let pauses=0,reloads=0,updates=0,activated=0,registrations=0,current='46',requests=[];
+ const events={},docEvents={},strip={dataset:{}},trigger={};let pauses=0,reloads=0,updates=0,activated=0,registrations=0,current='47',requests=[];
  const worker=version=>({postMessage(message,ports){if(message.type==='PRACTICE_VERSION')ports[0].reply({version:typeof version==='function'?version():version});else if(message.type==='PRACTICE_ACTIVATE')activated++;}});
  const reg={waiting:null,installing:null,addEventListener(){},update(){updates++;return Promise.resolve();}};
  const serviceWorker={controller:worker(()=>current),addEventListener(type,fn){events[type]=fn;},register:async()=>{registrations++;return reg;},getRegistration:async()=>reg};
@@ -98,19 +109,19 @@ function appFixture({online=true,remote='46',status=200}={}){
  return{api,nodes,events,docEvents,reg,navigator,worker,requests,settle:()=>new Promise(resolve=>setImmediate(resolve)),stats:()=>({pauses,reloads,updates,activated,registrations}),setCurrent:v=>current=v};
 }
 const app=appFixture();await app.settle();await app.api.check({manual:true});
-assert.equal(app.nodes['practice-app-version'].textContent,'v46');assert.match(app.nodes['practice-update-result'].textContent,/v46 は最新/);
+assert.equal(app.nodes['practice-app-version'].textContent,'v47');assert.match(app.nodes['practice-update-result'].textContent,/v47 は最新/);
 assert.ok(app.requests.length>0&&app.requests.every(r=>r.cache==='no-store'&&new URL(r.url).searchParams.has('practice-release-check')),'Release checks bypass immutable offline navigation');
 assert.equal(app.stats().pauses,0,'Read-only update checks do not interrupt practice');
-app.reg.waiting=app.worker('47');await app.api.check({manual:true});
-assert.equal(app.nodes['practice-update'].hidden,false);assert.match(app.nodes['practice-update-label'].textContent,/v47/);assert.equal(app.stats().activated,0,'A new release waits for the user');
-app.nodes['practice-update-now'].click();assert.equal(app.stats().activated,1);app.setCurrent('47');await app.events.controllerchange();
+app.reg.waiting=app.worker('48');await app.api.check({manual:true});
+assert.equal(app.nodes['practice-update'].hidden,false);assert.match(app.nodes['practice-update-label'].textContent,/v48/);assert.equal(app.stats().activated,0,'A new release waits for the user');
+app.nodes['practice-update-now'].click();assert.equal(app.stats().activated,1);app.setCurrent('48');await app.events.controllerchange();
 assert.equal(app.stats().reloads,1,'Manual activation reloads after controller change');
 const noNetwork=appFixture({online:false});await noNetwork.settle();await noNetwork.api.check({manual:true});
 assert.equal(noNetwork.requests.length,0);assert.match(noNetwork.nodes['practice-update-result'].textContent,/オフライン/);assert.equal(noNetwork.nodes['offline-state'].textContent,'オフライン準備OK','Failed release checks preserve offline readiness');
 assert.equal(noNetwork.stats().registrations,0,'Offline reopening uses the installed registration');assert.equal(noNetwork.stats().updates,0,'Offline checks never fetch sw.js');
 const departing=appFixture();departing.navigator.serviceWorker.controller=null;await departing.settle();await departing.api.check({manual:true});
 assert.notEqual(departing.nodes['offline-state'].textContent,'オフライン準備OK','A departing controller cannot confirm a different installed snapshot');
-for(const options of [{remote:'39'},{remote:'47'},{remote:'not-a-version'},{status:503}]){
+for(const options of [{remote:'39'},{remote:'48'},{remote:'not-a-version'},{status:503}]){
  const a=appFixture(options);await a.settle();await a.api.check({manual:true});assert.doesNotMatch(a.nodes['practice-update-result'].textContent,/は最新/);assert.equal(a.stats().activated,0,'Stale, invalid and installing responses cannot activate a release');
 }
 const foreground=appFixture();await foreground.settle();const count=foreground.requests.length;

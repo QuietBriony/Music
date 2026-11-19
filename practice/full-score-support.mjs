@@ -1,5 +1,5 @@
-import {centsFrom,noteName} from './music.mjs?v=46';
-import {lyricPhraseRange} from './score-lyrics.mjs?v=46';
+import {centsFrom,noteName} from './music.mjs?v=47';
+import {lyricPhraseRange} from './score-lyrics.mjs?v=47';
 
 // Only verified bundled positions can move the musical playhead. Personal text
 // and custom timing retain their existing manual controls without inferred notes.

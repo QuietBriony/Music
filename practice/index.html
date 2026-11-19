@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="practice-version" content="46">
+  <meta name="practice-version" content="47">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#f6f3ec">
   <meta name="description" content="ギターはコード図と指ガイド、三線は工工四。調弦から好きな曲の弾き語りまで、自分のペースで練習。">
@@ -10,23 +10,23 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=46">
-  <link rel="stylesheet" href="policies.css?v=46">
-  <link rel="stylesheet" href="presets.css?v=46">
-  <link rel="stylesheet" href="session.css?v=46">
-  <link rel="stylesheet" href="singalong.css?v=46">
-  <link rel="stylesheet" href="hand-guide.css?v=46">
-  <link rel="stylesheet" href="sanshin.css?v=46">
-  <link rel="stylesheet" href="tablet.css?v=46">
-  <link rel="stylesheet" href="full-score.css?v=46">
-  <link rel="stylesheet" href="guitar-playlist.css?v=46">
-  <link rel="stylesheet" href="auto-follow.css?v=46">
-  <link rel="stylesheet" href="chord-guide.css?v=46">
-  <link rel="stylesheet" href="app-shell.css?v=46">
-  <script type="module" src="app.mjs?v=46"></script>
-<link rel="stylesheet" href="./materials.css?v=46">
-<link rel="stylesheet" href="./sanshin-study.css?v=46">
-<link rel="stylesheet" href="video-policy.css?v=46">
+  <link rel="stylesheet" href="style.css?v=47">
+  <link rel="stylesheet" href="policies.css?v=47">
+  <link rel="stylesheet" href="presets.css?v=47">
+  <link rel="stylesheet" href="session.css?v=47">
+  <link rel="stylesheet" href="singalong.css?v=47">
+  <link rel="stylesheet" href="hand-guide.css?v=47">
+  <link rel="stylesheet" href="sanshin.css?v=47">
+  <link rel="stylesheet" href="tablet.css?v=47">
+  <link rel="stylesheet" href="full-score.css?v=47">
+  <link rel="stylesheet" href="guitar-playlist.css?v=47">
+  <link rel="stylesheet" href="auto-follow.css?v=47">
+  <link rel="stylesheet" href="chord-guide.css?v=47">
+  <link rel="stylesheet" href="app-shell.css?v=47">
+  <script type="module" src="app.mjs?v=47"></script>
+<link rel="stylesheet" href="./materials.css?v=47">
+<link rel="stylesheet" href="./sanshin-study.css?v=47">
+<link rel="stylesheet" href="video-policy.css?v=47">
 </head>
 <body>
 <div class="page">
@@ -97,7 +97,7 @@
     <div id="midi-options" class="midi-options" hidden><label>旋律トラック<select id="midi-track"></select></label><label>移調（半音）<select id="midi-shift"></select></label><label class="check-label"><input id="high-voice" type="checkbox"> 高い音を旋律として読む</label></div>
     <p id="song-credit" class="song-credit" hidden><span id="credit-text"></span> <a id="credit-link" target="_blank" rel="noopener">出所・楽譜 ↗</a> · <a href="songs/provenance.json" target="_blank" rel="noopener">教材の利用条件</a></p>
     </details><p id="midi-status" class="small" role="status"></p>
-    <div class="session-heading"><div><h2 id="session-title">練習</h2><p id="session-help" class="small">譜面・音・歌詞を同じ位置で確かめます。</p></div><div class="session-heading-actions"><button id="practice-app-info" data-practice-info aria-label="アプリの版・更新・マイク設定"><span id="practice-app-version">v46</span><span>更新</span></button><button id="focus-mode" aria-pressed="false">練習に集中</button></div></div>
+    <div class="session-heading"><div><h2 id="session-title">練習</h2><p id="session-help" class="small">譜面・音・歌詞を同じ位置で確かめます。</p></div><div class="session-heading-actions"><button id="practice-app-info" data-practice-info aria-label="アプリの版・更新・マイク設定"><span id="practice-app-version">v47</span><span>更新</span></button><button id="focus-mode" aria-pressed="false">練習に集中</button></div></div>
     <div class="workspace" id="practice-stage">
     <section class="tuner-only tuner-setup" aria-label="調弦する弦"><h2>合わせる弦を選ぶ</h2><label id="tuner-kind-label" hidden>三線の調弦（ちんだみ）<select id="tuner-kind"><option value="honchoshi">本調子（ほんちょうし）</option><option value="niage">二揚げ（にあげ・にあぎ）</option><option value="sansage">三下げ（さんさげ・さんさぎ）</option></select></label><p id="tuner-detail" class="small"></p><a id="tuning-source" href="https://support.arakaki34.com/wp-content/uploads/2018/09/4a77e182f2ad77e4be4c727fa0da6327.pdf" target="_blank" rel="noopener" hidden>本調子・二揚げ・三下げの早見表（新垣三線店） ↗</a><div id="tuner-strings"></div><label class="check-label tuner-auto-label"><input id="tuner-auto-next" type="checkbox" checked>合ったら次の弦へ進む</label><details class="tuner-help"><summary>調弦のやり方・うまく拾わないとき</summary><p class="small">「この音を聴く」で弦の響きと余韻を確認。同じボタンでも止められます。マイクを始めて一本だけ弾くと、高い・低いが分かります。左手は押さえず、糸巻きは少しずつ回します。拾った音と針は、音が消えても表示を保ちます。少し回す→弾き直す、を繰り返し、緑の「○ OK」を目安に合わせます。○は初心者向けのゆるめの判定です。「合ったら次の弦へ」がオンなら、○ OKが安定した後に次へ進みます。すべて合うとマイクが止まります。同じ弦を続けて確認したいときはオフにできます。</p></details><label>マイクの感度<select id="tuner-sensitivity"><option value="0.003">小さな音</option><option value="0.006" selected>標準</option><option value="0.014">周りの音を抑える</option></select></label></section>
       <section class="session-toolbar" aria-label="練習の操作"><div class="session-buttons"><button id="mic-start" class="primary">マイクで始める</button><button id="touch-start" class="secondary">画面で試す</button><button id="demo">♪ ガイドに合わせて弾く</button><button id="stop" disabled>停止</button><button id="restart">最初から</button><button id="reference" aria-pressed="false">♪ この音を聴く</button><div id="touch-chord-actions"><button id="set-shape" class="set-shape">この形を指板に置く</button><button id="strum" class="primary">↓ ストローク</button><button id="open-fretboard">指板を編集</button></div></div><div id="touch-panel" class="touch-panel" hidden><p id="touch-description">下の音を押して進めます。マイク判定とは別の体験です。</p><div id="touch-keys"></div></div><details id="practice-settings" class="practice-settings"><summary>速さ・マイクの設定</summary><div class="session-settings"><label>速さ<select id="tempo"><option value="60">ゆっくり</option><option value="85" selected>ふつう</option><option value="110">速め</option></select></label><label id="chord-check-label" hidden>マイクで確認<select id="chord-check"><option value="strum">ジャーンと弾いて次へ（試験）</option><option value="strings">一弦ずつ音を確かめる</option></select></label><label class="practice-input">音を拾う強さ<select id="mic-boost"></select></label><label class="check-label"><input id="count-in" type="checkbox"> 4カウント</label></div></details></section>
@@ -137,9 +137,9 @@
     <details class="learning-card" id="reading-help"><summary>読み方と練習のコツを見る</summary><h2 id="learn-title">読み方と練習の順番</h2><ol id="learn-steps"></ol><div id="learn-links" class="reference-links"></div></details>
     <details class="learning-card"><summary>曲別の準備練習・参考教材</summary><h2>好きな曲を練習する</h2><label>練習したい曲<select id="study-select"></select></label><h3 id="study-title"></h3><p id="study-focus"></p><div id="study-links" class="reference-links"></div><p id="study-note" class="small"></p><div id="study-stages" class="study-stages"></div><button id="study-song" class="study-song">動画とコード図で練習</button><button id="study-practice">先に基礎を練習</button></details>
     <details class="local-lyrics learning-card" id="lyric-editor"><summary>歌詞と譜面の位置を合わせる</summary><h3 id="lyric-song-title"></h3><p class="small">歌詞はこの端末だけに保存します。LRCの[00:12.50]形式で時刻を入れるか、行を選んで「現在の位置に合わせる」を押します。[C]歌詞[Am]のようなコード付きテキストから、コード譜と仮ガイドを作ることもできます。</p><label class="lyric-file-label">歌詞ファイルを開く（UTF-8・80 KBまで）<input id="lyric-file" type="file" accept=".txt,.lrc,.cho,.chordpro,text/plain"></label><p class="small">時刻付きのLRCも選べます。開くだけでは今の歌詞を上書きしません。</p><label>歌詞・LRC・コード付きテキスト（2万字・200行まで）<textarea id="lyric-input" maxlength="20000" rows="7" placeholder="ここに手元の歌詞やLRCを貼り付ける"></textarea></label><div class="lyric-actions"><button id="lyric-save">端末に保存して表示</button><button id="chord-sheet-import">コード譜と歌詞を読み込む</button><button id="lyric-download">LRCで保存</button><button id="lyric-clear">この曲の歌詞を削除</button><button id="lyric-restore" hidden>収録歌詞に戻す</button></div><p id="lyric-status" class="small" role="status"></p><details class="lyric-notes-editor"><summary>読み方・標準語の意味を付ける（任意）</summary><p class="small">歌詞を先に保存し、同じ行数で入れます。空行で省略できます。歌詞を変更すると、以前の読み方・意味は外れます。入力内容はこの端末だけに保存します。</p><label>読み方<textarea id="lyric-reading-input" rows="4" maxlength="20000"></textarea></label><label>標準語の意味・訳<textarea id="lyric-meaning-input" rows="4" maxlength="20000"></textarea></label><button id="lyric-notes-save">読み方と意味を保存</button></details><label>合わせる歌詞の行<select id="lyric-line"></select></label><p id="lyric-time" class="small"></p><div class="lyric-actions"><button id="lyric-mark">この行を現在の位置に合わせる</button><button id="lyric-unmark">この行の時刻を外す</button></div><label class="check-label"><input id="lyric-follow" type="checkbox"> 譜面・ガイドに追従</label><p id="lyric-cues" class="small"></p><p id="lyric-credit" class="small"></p><p id="lyric-current" class="lyric-current"></p><div class="lyric-actions"><button id="lyric-prev">前の行</button><span id="lyric-position"></span><button id="lyric-next">次の行</button></div></details>
-    <details class="help"><summary>設定・今回できること</summary><div><p>v46では、YouTubeの規約とプライバシーの案内、動画を使う前の同意を追加しました。工工四の全画面では、歌詞と読みを横向きでも表示します。「前の行／次の行」で歌う場所へ移り、一行反復できます。聴き取り中の行替え・反復の切替は、マイクを取り直さずに続けられます。直前に聞こえた音は短く残し、合った音は「○ OK」で知らせます。</p><label>マイク感度<select id="sensitivity"><option value="0.003">小さな音も拾う</option><option value="0.006" selected>標準</option><option value="0.014">周りの音を抑える</option></select></label><p>三線は、てぃんさぐぬ花・月ぬ美しゃの1〜3番と古典の安波節1番を、歌詞付き内蔵工工四で練習できます。ほか9曲は先生の教材動画へ。赤田首里殿内・谷茶前節のアプリの歌詞欄は手動送りです。ギター11曲は動画とコード図・手の形を使い、確認済みの進行と推定の目安を曲ごとに案内します。</p><p>収録歌詞と同じ本文・読みは端末に複製せず、表示位置を保存します。本人が編集した歌詞・読み・時刻は残します。MIDIは形式0/1・PPQ・512音まで。PDF・画像・録音からの採譜には対応していません。</p><p>iPhoneはSafariの共有から「ホーム画面に追加」できます。「オフライン準備OK」の後は内蔵曲・コード・読み方を通信なしで使えます。教材動画には通信が必要です。</p><p>音声は端末内で判定し、録音・送信しません。実楽器・実iPhone/iPadでの精度は未確認です。</p></div></details>
+    <details class="help"><summary>設定・今回できること</summary><div><p>v47では、YouTubeの規約とプライバシーの案内、動画を使う前の同意に対応しています。規約ページはオフラインでも開けます。工工四の全画面では、歌詞と読みを横向きでも表示します。「前の行／次の行」で歌う場所へ移り、一行反復できます。聴き取り中の行替え・反復の切替は、マイクを取り直さずに続けられます。直前に聞こえた音は短く残し、合った音は「○ OK」で知らせます。</p><label>マイク感度<select id="sensitivity"><option value="0.003">小さな音も拾う</option><option value="0.006" selected>標準</option><option value="0.014">周りの音を抑える</option></select></label><p>三線は、てぃんさぐぬ花・月ぬ美しゃの1〜3番と古典の安波節1番を、歌詞付き内蔵工工四で練習できます。ほか9曲は先生の教材動画へ。赤田首里殿内・谷茶前節のアプリの歌詞欄は手動送りです。ギター11曲は動画とコード図・手の形を使い、確認済みの進行と推定の目安を曲ごとに案内します。</p><p>収録歌詞と同じ本文・読みは端末に複製せず、表示位置を保存します。本人が編集した歌詞・読み・時刻は残します。MIDIは形式0/1・PPQ・512音まで。PDF・画像・録音からの採譜には対応していません。</p><p>iPhoneはSafariの共有から「ホーム画面に追加」できます。「オフライン準備OK」の後は内蔵曲・コード・読み方を通信なしで使えます。教材動画には通信が必要です。</p><p>音声は端末内で判定し、録音・送信しません。実楽器・実iPhone/iPadでの精度は未確認です。</p></div></details>
   </main>
-  <footer><span>MUSIC STACK / PRACTICE 46</span><a href="../listen.html">Listenへ戻る ↗</a><button data-practice-privacy>規約とプライバシー</button></footer>
+  <footer><span>MUSIC STACK / PRACTICE 47</span><a href="../listen.html">Listenへ戻る ↗</a><button data-practice-privacy>規約とプライバシー</button></footer>
 </div>
 <dialog id="hand-dialog" aria-labelledby="hand-title">
  <header id="hand-header" class="hand-header"><div><small>指をひとつずつ、置いてみる</small><h2 id="hand-title">手の作り方</h2></div><button id="hand-close">練習へ戻る ×</button><nav aria-label="押さえ方の見方"><button id="hand-to-steps">指の順番</button><button id="hand-to-change" hidden>つなぎ方</button><button id="hand-to-posture">手の形</button><button id="hand-to-video">手元動画</button><button data-practice-privacy>規約とプライバシー</button></nav></header>
@@ -185,7 +185,7 @@
 <dialog id="song-browser" class="song-browser" aria-labelledby="song-browser-title"><header><h2 id="song-browser-title">好きな曲から始める</h2><button data-practice-privacy aria-label="規約とプライバシー">規約</button><button id="song-browser-close" autofocus>閉じる ×</button></header><div class="song-browser-body"><div class="song-search-controls"><label>曲名・歌手名で探す<input id="song-search" type="search" placeholder="時間よ止まれ、Radiohead…" autocomplete="off"></label><label>楽器<select id="song-filter"><option value="all">すべて</option><option value="guitar">ギター</option><option value="sanshin">三線</option></select></label></div><p id="song-result-count" role="status"></p><div id="song-results"></div><p class="small">曲を選ぶと練習画面が開きます。動画やマイクは、そこで始められます。</p></div></dialog>
 <dialog id="practice-info-dialog" aria-labelledby="practice-info-title">
  <header><h2 id="practice-info-title">アプリの更新とマイク</h2><button id="practice-info-close" autofocus>閉じる ×</button></header>
- <div class="practice-info-body"><section aria-labelledby="practice-info-version"><nav class="practice-policy-links"><a href="terms.html" target="_blank" rel="noopener">利用条件</a><a href="privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a><button data-practice-privacy>動画への同意を変更</button></nav><p id="practice-consent-state"></p><p id="practice-consent-save-state" role="status"></p><h3 id="practice-info-version">使用中 v46</h3><p id="practice-update-result" role="status">通信があるときに新しい版を確認できます。</p><div class="practice-info-actions"><button id="practice-update-check" class="primary">更新を確認</button><button id="practice-reload">この版を読み直す</button></div><p class="small">練習位置・調弦・感度・保存した歌詞は更新しても残ります。新しい版へ切り替えると演奏とマイクは停止します。</p><details><summary>三線の調弦でできること</summary><p>音名と針を少し留めて表示し、合うと「○ OK」。安定したら次の弦へ進み、3本合ったらマイクを止めます。v46では動画の同意と表示を整えました。工工四の表示・反復・聴き取りは従来どおりです。調弦の音の判定は変更していません。</p></details></section>
+ <div class="practice-info-body"><section aria-labelledby="practice-info-version"><nav class="practice-policy-links"><a href="terms.html" target="_blank" rel="noopener">利用条件</a><a href="privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a><button data-practice-privacy>動画への同意を変更</button></nav><p id="practice-consent-state"></p><p id="practice-consent-save-state" role="status"></p><h3 id="practice-info-version">使用中 v47</h3><p id="practice-update-result" role="status">通信があるときに新しい版を確認できます。</p><div class="practice-info-actions"><button id="practice-update-check" class="primary">更新を確認</button><button id="practice-reload">この版を読み直す</button></div><p class="small">練習位置・調弦・感度・保存した歌詞は更新しても残ります。新しい版へ切り替えると演奏とマイクは停止します。</p><details><summary>三線の調弦でできること</summary><p>音名と針を少し留めて表示し、合うと「○ OK」。安定したら次の弦へ進み、3本合ったらマイクを止めます。v47では動画の同意と表示を整えました。工工四の表示・反復・聴き取りは従来どおりです。調弦の音の判定は変更していません。</p></details></section>
  <section aria-labelledby="mic-permission-heading"><h3 id="mic-permission-heading">マイクの許可</h3><p id="mic-permission-state" role="status">マイクの許可は、始めるときに端末で確認します。</p><p id="mic-permission-previous" class="small"></p><p>マイクの許可を覚えるかどうかは、端末とブラウザが決めます。iPad・iPhoneのホーム画面アプリでは、開き直すと再び許可を求められる場合があります。</p><details><summary>毎回、許可の確認が出るとき</summary><p>Safariでこのアプリと同じURLを開き、ページメニュー →「Webサイトの設定」→「マイク」→「許可」を確認できます。ホーム画面アプリには、Safariの設定が引き継がれない場合があります。確認が負担なときは、Safariで使う方法もあります。</p><p><a href="https://support.apple.com/en-ie/guide/ipad/ipad8ea0fc1a/ipados" target="_blank" rel="noopener">Appleのマイク設定の案内 ↗</a> · <a href="https://bugs.webkit.org/show_bug.cgi?id=327237" target="_blank" rel="noopener">ホーム画面アプリの許可に関する報告 ↗</a></p></details><p class="small">この画面を開くだけでは、マイクを開始したり許可を求めたりしません。音声は端末内で判定し、録音・送信しません。</p></section></div>
 </dialog>
 <dialog id="practice-consent-dialog" aria-labelledby="practice-consent-title" aria-describedby="practice-consent-description">

@@ -1,5 +1,5 @@
-import { videoId } from './singalong-core.mjs?v=46';
-import {hasYouTubeConsent,requestYouTubeConsent} from './privacy.mjs?v=46';
+import { videoId } from './singalong-core.mjs?v=47';
+import {hasYouTubeConsent,requestYouTubeConsent} from './privacy.mjs?v=47';
 let pending=null;
 export function youtubeAPI(){
  if(!hasYouTubeConsent())return Promise.reject(new Error('YouTubeの動画を使う前に、規約とプライバシーを確認してください。'));
