@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-277-acid-dub-return";
-  const BANDROOM_RELEASE_VERSION = "v446";
+  const BANDROOM_APP_VERSION = "br-278-live-echo";
+  const BANDROOM_RELEASE_VERSION = "v447";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -615,21 +615,82 @@
   }
   function applyAcidEffects(value) {
     acidLiveEffects?.configure(value);
-    if (acidLivePanel && $("br-acid-controls")?.hidden === false) coherentStemMix?.setRoomAmount(value.room / 100);
+    if (acidLiveSupported() && acidLivePanel && $("br-acid-controls")?.hidden === false) coherentStemMix?.setRoomAmount(value.room / 100);
   }
-  function throwAcidEcho(part, settings) {
-    if (!state.started || !acidLiveSupported()) throw new Error("曲をSTARTし、声やギターが鳴る瞬間に押してください。");
-    if ($("br-toggle-stem-" + part)?.checked === false || Number($("br-live-" + part)?.value) === 0) throw new Error("そのパートのミュート・音量を戻してから押してください。");
+  const stemEchoCues = {
+    hey: {start:50, phrase:"歌の語尾 → ギター", hits:[["vocals",52.54],["other",53.74]]},
+    "electric-sheep": {start:59, phrase:"ギターのリフ → ドラム", hits:[["other",61.24],["drums",64.04]]}
+  };
+  const stemEchoNames = {vocals:"歌", other:"ギター", drums:"ドラム"};
+  function stemEchoAvailable() {
+    return currentMode === "stems" && state.currentBandId === "tabasco" && ["blend", "dub"].includes(originalMastering);
+  }
+  function echoPartAudible(part) {
+    return stemPlayers[part] && $("br-toggle-stem-" + part)?.checked && Number($("br-live-" + part)?.value) > 0;
+  }
+  function throwRecordedEcho(part, settings, createEffects, at) {
+    if (!state.started || !stemPlaybackAnchor || !stemEchoAvailable()) throw new Error("パート別で曲をSTARTしてください。");
+    if (!echoPartAudible(part)) throw new Error("このパートをオンにして、音量を上げてください。");
     const context = Tone.getContext().rawContext;
     if (!acidLiveEffects || acidEffectsContext !== context) {
       acidLiveEffects?.dispose(); acidEffectsContext = context;
-      acidLiveEffects = acidLivePanel.createEffects({ context,
+      acidLiveEffects = createEffects({ context,
         tap: (name, node, onMute) => ensureCoherentStemMix().tap(name, node, onMute),
         connect: node => Tone.connect(node, originalMasterGain) });
     }
     acidLiveEffects.configure(settings);
-    acidLiveEffects.throw(part, (Number(state.songData?.guitar_line?.bpm_fit) || playbackBaseBpm()) * playbackRateMultiplier());
-    return true;
+    acidLiveEffects.throw(part, (Number(state.songData?.guitar_line?.bpm_fit) || playbackBaseBpm()) * playbackRateMultiplier(), at);
+    return settings.echo > 0;
+  }
+  function syncStemEchoControls(playState = $("br-play")?.dataset.state) {
+    const host = $("br-stem-echo");
+    if (!host) return;
+    host.hidden = !stemEchoAvailable();
+    const title = currentBandSongMeta()?.title;
+    $("br-echo-title").textContent = title ? title + " · ライブエコー" : "ライブエコー";
+    const transport = $("br-echo-play");
+    transport.disabled = playState !== "playing" && (!state.songData || playState === "starting");
+    transport.textContent = playState === "playing" ? "■ STOP" : playState === "starting" ? "準備中…" : "▶ START";
+    const cue = stemEchoCues[state.currentSongId], demo = $("br-echo-demo");
+    demo.hidden = !cue;
+    if (cue) demo.textContent = `▶ お手本　${formatPlaybackTime(cue.start)}から ${cue.phrase}`;
+    demo.disabled = !state.songData || state.starting || playState === "starting";
+    for (const button of host.querySelectorAll("[data-stem-echo]")) button.disabled = playState !== "playing";
+    if (playState !== "playing" || host.hidden) $("br-echo-status").textContent = "";
+  }
+  async function performStemEcho(part) {
+    if (!stemEchoAvailable() || state.starting || playbackSelectionTransitionInFlight()) return;
+    const selection = createPlaybackStartContract(), anchor = stemPlaybackAnchor, cue = stemEchoCues[state.currentSongId];
+    const sameSelection = () => playbackStartContractMatches(selection, createPlaybackStartContract());
+    const status = $("br-echo-status"), settings = {echo:72, tone:44};
+    try {
+      // Unlock on the same tap that requests the example. Load the effect only on use.
+      if (!part) await Tone.start();
+      const {createLiveEffects} = await import("./audio/acid-live-fx.mjs?v=2");
+      if (!stemEchoAvailable() || !sameSelection() || anchor !== stemPlaybackAnchor || state.starting) return;
+      if (part) {
+        throwRecordedEcho(part, settings, createLiveEffects);
+        status.textContent = stemEchoNames[part] + "にエコー";
+        return;
+      }
+      if (!cue || !state.songData) return;
+      clearLoopRange(); refreshLoopVisuals();
+      seekToPlaybackSecond(cue.start);
+      if (!state.started && !await startPlayback({preservePosition:true})) return;
+      const clock = stemPlaybackAnchor;
+      if (!clock || !stemEchoAvailable() || !sameSelection() || Math.abs(clock.offset - cue.start) > .1) return;
+      let count = 0;
+      for (const [voice, second] of cue.hits) {
+        const at = clock.at + (second - clock.offset) / clock.rate;
+        if (echoPartAudible(voice) && at > audioClockSeconds()) {
+          throwRecordedEcho(voice, settings, createLiveEffects, at);
+          count++;
+        }
+      }
+      status.textContent = count ? "このフレーズの続きは、パッドで自由に返せます。" : "歌・ギター・ドラムのミュートと音量を確認してください。";
+    } catch (error) {
+      if (sameSelection()) status.textContent = error.message;
+    }
   }
   function syncAcidLiveUi() {
     const section = $("br-acid-live");
@@ -637,8 +698,11 @@
     placeAcidSourceControls(acidLiveSupported() && $("br-acid-controls")?.hidden === false);
     document.body?.classList.toggle("br-acid-open", acidLiveSupported() && $("br-acid-controls")?.hidden === false);
     if (!acidLiveSupported()) {
-      stopAcidLive(); coherentStemMix?.setRoomAmount(.65); acidLiveEnabled = false; acidLivePanel?.setEnabled(false); syncAcidVocalPickup();
+      if (acidLiveEnabled) stopAcidLive();
+      coherentStemMix?.setRoomAmount(.65); acidLiveEnabled = false; acidLivePanel?.setEnabled(false); syncAcidVocalPickup();
     }
+    if (!stemEchoAvailable()) acidLiveEffects?.stop();
+    syncStemEchoControls();
   }
   async function prepareAcidLive() {
     if (!acidLiveEnabled || !acidLiveSupported() || !acidLivePanel) return false;
@@ -695,7 +759,7 @@
       button.disabled = true;
       try {
         if (!acidLivePanel) {
-          const { createAcidPanel } = await import("./audio/acid-live-panel.mjs?v=4");
+          const { createAcidPanel } = await import("./audio/acid-live-panel.mjs?v=5");
           if (!acidLiveSupported()) return;
           acidLivePanel = createAcidPanel({ host,
             tempo: Number($("br-tempo-mult")?.value || 100),
@@ -704,7 +768,7 @@
             onEnable: enableAcidLive,
             onPlay: async () => { clearLoopRange(); refreshLoopVisuals(); await Tone.start(); return startPlayback(); },
             onChange: (config, options) => { acidLiveEngine?.configure(config, options); syncAcidVocalPickup(); },
-            onEcho: throwAcidEcho, onFx: applyAcidEffects,
+            onEcho: (part, fx) => throwRecordedEcho(part, fx, acidLivePanel.createEffects), onFx: applyAcidEffects,
             captureContext: () => ({ tempo: Number($("br-tempo-mult")?.value || 100), position: clampPlaybackSecond(state.started ? playbackContentElapsedSec() : Number(state.pendingSeekOffsetSec ?? state.playbackStartOffsetSec ?? 0)),
               instruments: acidLiveEnabled, mastering: ["blend", "dub"].includes(originalMastering) ? originalMastering : "blend",
               levels: Object.fromEntries(STEM_NAMES.map(p => [p, Number($("br-live-" + p)?.value ?? 80)])),
@@ -3921,7 +3985,7 @@
   function startStemPlayback(offsetSec = 0) {
     if (!stemPlayers.vocals && !stemPlayers.drums && !stemPlayers.bass && !stemPlayers.other) return false;
     coherentStemMix?.setRoomActive(true);
-    if (acidLivePanel && $("br-acid-controls")?.hidden === false) applyAcidEffects(acidLivePanel.state().fx);
+    if (acidLiveSupported() && acidLivePanel && $("br-acid-controls")?.hidden === false) applyAcidEffects(acidLivePanel.state().fx);
     for (const part of STEM_NAMES) coherentStemMix?.setDubMuted(part, $("br-toggle-stem-" + part)?.checked === false);
     // One audio-clock time for all four stems and the Dub arrangement.
     const startAt = Tone.now() + 0.15;
@@ -8592,6 +8656,7 @@
     const btn = $("br-play");
     if (!btn) return;
     btn.dataset.state = s;
+    syncStemEchoControls(s);
     const context = playbackStartContext();
     if (s === "playing") {
       btn.textContent = "STOP";
@@ -8826,6 +8891,11 @@
 
   function bindUI() {
     initAcidLiveControls();
+    $("br-echo-play")?.addEventListener("click", togglePlay);
+    $("br-echo-demo")?.addEventListener("click", () => performStemEcho());
+    for (const button of document.querySelectorAll("[data-stem-echo]")) {
+      button.addEventListener("click", () => performStemEcho(button.dataset.stemEcho));
+    }
     $("br-arcb-guitar-style")?.addEventListener("change", (event) => {
       physicalGuitarStyle = event.target.value;
     });

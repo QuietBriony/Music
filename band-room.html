@@ -7,7 +7,7 @@
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
 <script src="audio/premix-entry.js?v=1"></script>
-<link rel="stylesheet" href="band-room.css?v=br-102" />
+<link rel="stylesheet" href="band-room.css?v=br-103" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -31,7 +31,7 @@
 <script src="audio/dub-arrangement.js?v=4" defer></script>
 <script src="audio/dub-mix.js?v=8" defer></script>
 <script src="audio/stem-live-mix.js?v=10" defer></script>
-<script src="band-room.js?v=br-277" defer></script>
+<script src="band-room.js?v=br-278" defer></script>
 <script type="module" src="audio/premix-preview.mjs?v=15"></script>
 <script type="module" src="audio/physical-band/preview.mjs?v=5"></script>
 <script type="module" src="audio/physical-band/guitar-audition-preview.mjs?v=2"></script>
@@ -294,6 +294,21 @@
       <div id="br-meter" aria-hidden="true"><div id="br-meter-fill"></div></div>
       <canvas id="br-spectrum" width="280" height="36" aria-hidden="true"></canvas>
       <nav id="br-section-nav" aria-label="Section quick nav"></nav>
+    </section>
+
+    <section id="br-stem-echo" hidden aria-label="ライブエコー" data-scope="stems">
+      <div class="br-echo-heading">
+        <strong id="br-echo-title">ライブエコー</strong>
+        <button type="button" id="br-echo-play" disabled>▶ START</button>
+      </div>
+      <p class="br-help">STARTして、歌の語尾や楽器の一打で押してみてください。その瞬間の音が曲のテンポで返ります。</p>
+      <div class="br-acid-actions">
+        <button type="button" data-stem-echo="vocals" disabled>歌</button>
+        <button type="button" data-stem-echo="other" disabled>ギター</button>
+        <button type="button" data-stem-echo="drums" disabled>ドラム</button>
+      </div>
+      <button type="button" id="br-echo-demo" hidden></button>
+      <span id="br-echo-status" role="status"></span>
     </section>
 
     <section id="br-acid-live" hidden aria-label="Human Flyの楽器と声でライブアレンジ" data-scope="stems">

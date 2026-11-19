@@ -1,5 +1,7 @@
 # Runtime Browser Listening Checklist
 
+Band Room v447 uses hazama-fm-v447, band-room.js?v=br-278 and band-room.css?v=br-103. Start the Hey and Electric Sheep stem examples, listen for both distinct echoes, try a manual drum hit, then mute, seek, change tempo and stop. Check the Human Fly saved arrangement after updating.
+
 ## Human Fly · Acid Dub
 
 With hazama-fm-v446 and band-room.js?v=br-277, seek to 3:10 during Acid Dub. Check that the recorded parts continue through the one-beat rest and that the low 303 returns on the kick at 196.120 seconds. Repeat at 80% speed, then check Stop and restore the other two versions.

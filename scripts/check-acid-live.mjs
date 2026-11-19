@@ -166,6 +166,15 @@ taps.get('vocals').onMute();assert.equal(fx.diagnostics().buses,1);assert.equal(
 fx.configure({echo:0,tone:42});assert.equal(fx.diagnostics().buses,0);assert.equal(unplugged,2);
 fx.throw('vocals',117.45);assert.equal(fx.diagnostics().buses,0);assert.throws(()=>fx.throw('bass',120));
 fx.configure({echo:35,tone:42});fx.throw('other',120);fx.stop();assert.equal(fx.diagnostics().nodes,0);
+// The example opens a post-fader send on the same audio clock as the recording.
+const throwTime=ctx.currentTime+4;
+fx.throw('drums',120,throwTime);
+const drumSend=taps.get('drums').n;
+assert.deepEqual(drumSend.gain.events.slice(-2),[[throwTime,1],[throwTime+.09,0]]);
+assert.equal(drumSend.links[0].frequency.value,460);
+assert.equal(drumSend.links[0].links[0].links[0].delayTime.value,.25);
+taps.get('drums').onMute();assert.equal(fx.diagnostics().nodes,0);
+assert.throws(()=>fx.throw('drums',120,NaN));
 const html=readFileSync('band-room.html','utf8'),source=readFileSync('band-room.js','utf8');
 assert.match(html,/br-acid-live[\s\S]*Dub／Acidを聴く/);
 assert.match(source,/function stopStemPlayback\(\)\s*\{\s*stopAcidLive\(\)/);

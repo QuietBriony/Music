@@ -2944,9 +2944,18 @@ html[data-br-surface="original"] :is(#br-master-vol-bar, #br-help-toggle, #br-kb
 #br-coherent-mix[hidden], #br-volume-stems[hidden] { display: none !important; }
 #br-coherent-reset { min-height: 44px; padding: 8px 14px; border: 1px solid var(--panel-border); border-radius: 8px; background: var(--panel); color: var(--text); cursor: pointer; }
 
-#br-acid-live { padding:16px; margin:16px 0; border:1px solid var(--panel-border); border-radius:12px; background:var(--panel); }
-#br-acid-live[hidden], #br-acid-controls[hidden] { display:none !important; }
-#br-acid-live button { min-height:44px; padding:8px 12px; border:1px solid var(--panel-border); border-radius:8px; background:var(--bg); color:var(--text); cursor:pointer; }
+#br-acid-live, #br-stem-echo { padding:16px; margin:16px 0; border:1px solid var(--panel-border); border-radius:12px; background:var(--panel); }
+#br-acid-live[hidden], #br-acid-controls[hidden], #br-stem-echo[hidden], #br-echo-demo[hidden], .br-acid-open #br-stem-echo { display:none !important; }
+#br-acid-live button, #br-stem-echo button { min-height:44px; padding:8px 12px; border:1px solid var(--panel-border); border-radius:8px; background:var(--bg); color:var(--text); cursor:pointer; }
+#br-stem-echo { scroll-margin-top:100px; }
+.br-echo-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+#br-echo-play { flex:none; }
+#br-stem-echo .br-acid-actions button { flex:1 0 72px; max-width:150px; font-weight:600; }
+#br-stem-echo button:active:enabled { border-color:var(--air); color:var(--air-soft); }
+#br-stem-echo button:focus-visible { outline:2px solid var(--air-soft); outline-offset:3px; }
+#br-stem-echo button:disabled { opacity:.45; cursor:default; }
+#br-echo-demo { margin:8px 8px 0 0; }
+#br-echo-status { font-size:13px; color:var(--text-sub); }
 #br-acid-live button[aria-pressed="true"] { border-color:var(--air); background:rgba(108,209,204,.15); }
 #br-acid-live button:disabled { opacity:.45; cursor:default; }
 .br-acid-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:12px 0; }

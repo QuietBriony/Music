@@ -2,7 +2,7 @@ import {defaults,validate,dice,PARTS,validatePerformanceContext} from './acid-li
 import {createAcidLive} from './acid-live.mjs?v=4';
 import {DRUMS,drumDice} from './acid-live-drums.mjs?v=1';
 import {SCENES,sceneAt} from './acid-live-scenes.mjs?v=3';
-import {createLiveEffects} from './acid-live-fx.mjs?v=1';
+import {createLiveEffects} from './acid-live-fx.mjs?v=2';
 import {VERSIONS,makeVersion} from './human-fly-versions.mjs?v=2';
 const KEY='music-band-room-human-fly-acid-v1';
 const TITLES={bass:'303 · 低音',reply:'303 · 返し'};
@@ -14,7 +14,7 @@ export function createAcidPanel({host,onEnable,onChange,onMix,onTempo,onEcho,onF
  host.innerHTML=`<section class="br-finished-versions" aria-label="Human Flyの完成アレンジ"><h3>曲として聴く</h3><p class="br-help">選ぶと冒頭から再生。曲の歌・山場・ブレイク・終わりに合わせた固定アレンジです。</p><div class="br-version-cards">${VERSIONS.map(v=>`<article><button type="button" data-human-version="${v.id}" aria-pressed="false">▶ ${v.title}</button><p>${v.note}</p></article>`).join('')}</div><p class="br-help">約4分・117.45 BPM。手元の保存枠はそのまま残ります。下の調整を開けば、鳴らしながら音色や抜き差しも変えられます。</p></section>
  <details class="br-version-edit"><summary>音色・パートを調整する</summary><div class="br-acid-actions"><button type="button" data-acid="enable" aria-pressed="false">追加楽器 OFF</button><button type="button" data-live-preset>展開つき303＋909</button><button type="button" data-acid="replace">ベースを303へ</button><button type="button" data-live-replace-drums>ドラムを909へ</button><button type="button" data-acid="original">元の4パートへ</button></div>
  <section class="br-live-scenes" aria-label="アレンジの場面"><div class="br-acid-actions"><button type="button" data-live-scene-auto aria-pressed="false">展開AUTO · OFF</button><span data-live-scene-status role="status">そのまま</span></div><div class="br-acid-actions">${SCENES.map(s=>`<button type="button" data-live-scene="${s.id}" aria-pressed="false">${s.name}</button>`).join('')}</div><p class="br-help">AUTOは余白→グルーヴ→ビルド→山場→抜く→戻す、64小節の流れ。場面ボタンでAUTOを止め、その場面をキープします。固定した追加パートは出入り・音色の自動変化からも守ります。</p></section>
- <div class="br-acid-actions"><button type="button" data-live-echo="vocals">声にエコーを投げる</button><button type="button" data-live-echo="other">ギターにエコーを投げる</button></div>
+ <div class="br-acid-actions"><button type="button" data-live-echo="vocals">声にエコーを投げる</button><button type="button" data-live-echo="other">ギターにエコーを投げる</button><button type="button" data-live-echo="drums">ドラムにエコーを投げる</button></div>
  <details class="br-live-source"><summary>歌・ギターほか・ベース・ドラムを触る</summary><div data-live-source-host></div></details>
  <details class="br-live-space"><summary>エコー・空間を触る</summary><div class="br-live-horizontal">${[['echo','エコー量'],['tone','反響の明るさ'],['room','共通リバーブ']].map(([key,label])=>`<label><span>${label}</span><input type="range" min="0" max="100" step="1" data-live-fx="${key}" aria-label="${label}"><output></output></label>`).join('')}</div><p class="br-help">声は付点8分、ギターは8分の暗い反響。押した瞬間の短い音を拾い、少しずつ消えます。曲の音量0・ミュート・STOPで残りも消します。共通リバーブは65が標準。エコーは追加楽器OFFでも使えます。</p></details>
  <label class="br-acid-speed">速さ <input type="range" min="50" max="120" step="1" value="100" data-acid-speed aria-label="曲と追加楽器の速さ"><output data-acid-speed-read>100%</output></label>
@@ -57,7 +57,7 @@ export function createAcidPanel({host,onEnable,onChange,onMix,onTempo,onEcho,onF
  find('original').addEventListener('click',()=>{enable(false);config.arrangement.work='custom';config.arrangement.gain=1;config.fx.room=65;onMix('original');publish();setStatus('追加楽器とエコーを止め、元の4パートへ戻しました。');});
  for(const b of host.querySelectorAll('[data-live-scene]'))b.addEventListener('click',()=>{config.arrangement={...config.arrangement,auto:false,scene:b.dataset.liveScene,progress:.5};publish('次の打点から「'+SCENES.find(s=>s.id===b.dataset.liveScene).name+'」をキープします。');});
  host.querySelector('[data-live-scene-auto]').addEventListener('click',()=>{if(config.arrangement.auto)config.arrangement={...config.arrangement,auto:false,scene:currentScene.id,progress:currentScene.progress};else config.arrangement.auto=true;publish(config.arrangement.auto?'展開AUTO ON。固定を残して場面を巡ります。':'今の場面をキープします。');});
- for(const b of host.querySelectorAll('[data-live-echo]'))b.addEventListener('click',()=>{try{if(onEcho(b.dataset.liveEcho,config.fx))setStatus((b.dataset.liveEcho==='vocals'?'声':'ギター')+'の短い音を、暗い反響へ送りました。');}catch(e){setStatus(e.message);}});
+ for(const b of host.querySelectorAll('[data-live-echo]'))b.addEventListener('click',()=>{try{const name={vocals:'声',other:'ギター',drums:'ドラム'}[b.dataset.liveEcho];setStatus(onEcho(b.dataset.liveEcho,config.fx)?name+'にエコー':'エコー量を上げてください。');}catch(e){setStatus(e.message);}});
  for(const input of host.querySelectorAll('[data-live-fx]'))input.addEventListener('input',()=>{config.fx[input.dataset.liveFx]=Number(input.value);publish();});
  find('auto').addEventListener('click',()=>{config.auto=!config.auto;publish('フレーズ小変化 '+(config.auto?'ON':'OFF'));});
  for(const b of host.querySelectorAll('[data-acid-dice]'))b.addEventListener('click',()=>{config=dice(config,b.dataset.acidDice);publish('固定と音色を保ち、フレーズを変えました。');});

@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v446 compact)
+# Band Room - Changelog (v65 -> v447 compact)
+
+## v447 — 2026-11-19
+
+Tabascoのパート別7曲でライブエコーを演奏できます。「Hey」は0:50から歌の語尾とギター、「Electric Sheep」は0:59からリフとドラムの一打を聴けます。お手本の後も演奏は続きます。 共通PWAは hazama-fm-v447。
 
 ## v446 — 2026-11-18
 
@@ -131,7 +135,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v446. Latest Band Room runtime change: v446 (Human Fly Acid Dub return). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v447. Latest Band Room runtime change: v447 (Tabasco live echo). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 
