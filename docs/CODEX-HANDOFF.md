@@ -462,7 +462,8 @@ Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32
 ## 現行ワークフロー
 
 1. `cd C:\workspace\music-stack\Music`
-2. `codex`（Codex CLI 起動。CLI version は環境で変わるので固定前提にしない）
+2. Codex を起動する。2026-11-17 時点の本線は、worker（`worker-gaming`）の Codex デスクトップアプリのスレッド（作業は worker の Music から作る worktree）。
+   Claude が repo に置いた依頼文を、本人が自分の言葉の承認と一緒にスレッドへ送る。CLI（`codex`）から始めてもよいが、CLI version は環境で変わるので固定前提にせず、本人の設定モデルが使える版か確かめる。
 3. **`docs/autonomy/AUTONOMOUS-RUN.md` のプレイブックに従う** — STACK-INDEX /
    SESSION-LEDGER / BACKLOG を読み、`agent: codex` / `agent: either` の item を 1 つ
    claim（`status: wip` を即 commit）して回す。下の TASK A-E は履歴で再実行しない。

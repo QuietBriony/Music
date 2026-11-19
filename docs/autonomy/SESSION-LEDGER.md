@@ -10,6 +10,20 @@
 
 2026-11-17 練習PWA v42：BL-053の本人からの直接指示に基づき、てぃんさぐぬ花・月ぬ美しゃの伝承歌詞1〜3番を切り替えて練習できるようにする。既存の63音／37音のMIDIと練習位置の保存キーは維持し、追加の番には独立した手元歌詞の保存先を使う。読み・独自のやさしい意味・語句説明と歌詞位置を追加。番の切替では再生・マイクを止め、譜面の位置と反復範囲を保持する。Tinsaguの追加データもCC BY-SA4.0、TsukinuはCC0。安里屋ゆんたは伝承歌詞を現行の節へ配置する根拠がなく見送り、標準語の新しい版は入れない。4番以降の未照合部分も追加しない。本人の許可原文と曲別の適用範囲をAGENTSの決まり3・lyrics-provenanceへ記録し、既存の英語歌詞2曲の例外も明記。次候補3曲は調査のみ。検査ルール・音の判定・音源・他repo・公開先は変更しない。実iPhone/iPadと実楽器は未確認。
 
+## 2026-11-19 — Codexの回し方の実態を手順書へ・練習PWAのYouTube規約対応の依頼文
+
+- Scope: docs only（`docs/autonomy/AUTONOMOUS-RUN.md`、`docs/CODEX-HANDOFF.md`、`docs/COLLAB-CLAUDE-AND-CODEX.md`、
+  `docs/autonomy/BACKLOG.md`、BL-053の依頼文、本記録）。runtime・cache・公開先は変更しない。
+- 手順書: Codexの入口が「CLIで起動」「同じPCのアプリをcomputer-useで操作」のままだったので、2026-11-17の調査結果を追記した。
+  Codexはworker（`worker-gaming`）のCodexデスクトップアプリのスレッドで動き、Claudeがrepoに置いた依頼文を、本人が自分の言葉の承認と一緒に送る。
+  CLI 0.145.0は本人の設定モデルが使えない。SSHから`codex exec`を回す経路は使わない。既存の手順とgateの記述は変えていない。
+- 公開repoの依頼文2つ（BL-053-minyo-handoff、BL-053-v44-handoff）にあったworkerのhostnameを、machine identity `worker-gaming`に置き換えた
+  （AGENTS.md：hostnameをMusicへコピーしない）。
+- BL-053: 本人の決定「４　入れる」（練習アプリのYouTube規約対応を次の版で）を記録し、依頼文`docs/autonomy/BL-053-youtube-terms-handoff.md`を追加。
+  ChordU由来の11コースの扱いは本人の返事待ち。
+- 検査: check-autonomy-queue、check-autonomy-doc-currency、`git diff --check`、`node scripts/stack-check.mjs`（同じHEADで0 BAD）。
+- next: 本人がCodexのスレッドへYouTube規約対応の依頼文を送る。v44・v45（Codex、2026-11-17）のレビュー結果をBL-053へ記録する。
+
 ## 2026-11-16 — BACKLOGの棚卸し（練習PWA・Lyric Lab notebookの登録と実機待ちの一本化）
 
 - Scope: docs only（`docs/autonomy/BACKLOG.md`と本記録）。本人が承認した棚卸し計画による。
