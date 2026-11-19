@@ -32,6 +32,11 @@ YouTube の API 利用規約と Developer Policies は、売るかどうかに�
    - 「コード図を大きく」で動画を隠している間は、「押さえ替えで待つ」のマイク判定で再生を再開しない（III.I：画面に出ていないプレーヤーでの再生）。
    - 固定のボタンや更新の案内が、スクロールでプレーヤーの上に重ならないことを確かめる。
 4. 文書：アプリ内の「利用条件」と、v41 以前から残る「今回できること」などの説明が古ければ、合わせて直す。
+5. v44・v45 のレビュー（2026-11-19、Claude）で残った小さい点も、ついでに直す：
+   - `practice/index.html:140` のフッターが「PRACTICE 43」のまま。版に合わせる。
+   - 安波節の全画面のリンク名（`practice/app.mjs:720`）が「照合した教材」。記録では mabui の譜が直接の出典なので、それが分かる名前にする。
+   - AGENTS.md の決まり3の安波節・赤田首里殿内・谷茶前節の行と、`practice/songs/lyrics-provenance.json` の `authorization.by_song[].scope` に残る「独自の読み」「確認した囃子 / verified refrain」を、v44 で直した記録に合わせる。
+   - `practice/songs/folk-v43-provenance.json` の赤田首里殿内の欄で、toyosanshin の用途が「Tancha」になっている書き写しの誤り。
 
 ## 守ること
 

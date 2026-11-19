@@ -22,7 +22,9 @@
 - BL-053: 本人の決定「４　入れる」（練習アプリのYouTube規約対応を次の版で）を記録し、依頼文`docs/autonomy/BL-053-youtube-terms-handoff.md`を追加。
   ChordU由来の11コースの扱いは本人の返事待ち。
 - 検査: check-autonomy-queue、check-autonomy-doc-currency、`git diff --check`、`node scripts/stack-check.mjs`（同じHEADで0 BAD）。
-- next: 本人がCodexのスレッドへYouTube規約対応の依頼文を送る。v44・v45（Codex、2026-11-17）のレビュー結果をBL-053へ記録する。
+- v44・v45（Codex、2026-11-17、PR #550・#551）を読み取りでレビューした。依頼文の項目はすべて対応済みで、目立つ不具合はない。
+  残った小さい点は、YouTube規約対応の依頼文の5に同梱した。BL-053に記録。
+- next: 本人がCodexのスレッドへYouTube規約対応の依頼文を送る。
 
 ## 2026-11-16 — BACKLOGの棚卸し（練習PWA・Lyric Lab notebookの登録と実機待ちの一本化）
 
