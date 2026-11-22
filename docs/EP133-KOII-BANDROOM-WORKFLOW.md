@@ -51,6 +51,37 @@ verification. Do not update firmware just to complete documentation.
 Sample transfer is not audio streaming. MIDI is not audio. USB audio in and out
 are separate endpoint directions. State the intended lane every time.
 
+## 公式「tects tools」の完成プロジェクトを試す
+
+[公式告知（2025-07-01）](https://teenage.engineering/now/2025#:~:text=tects%20tools)のサンプル集（ZIP）とは別の **EP project** を選ぶ。
+完成構成はAがドラム、Bがパーカッション（各scenes 1–3）、Cがサイドチェイン済みループ、Dが声とギター。
+以下は手動手順の記録で、実機転送・試奏・別PC確認は未実施。USB AudioやDAWは転送の前提ではない。
+
+1. 配布物をrepo外へ保存し、ファイルの実体・必要容量を確認する。音源や配布バイナリをGitへ追加しない。
+2. どちらのPCでもデータ対応USB-CケーブルとデスクトップのChrome／EdgeなどWeb MIDI対応ブラウザを使い、
+   [EP sample tool](https://teenage.engineering/apps/ep-sample-tool)で本体の認識と空き容量を確認する。
+   認識できなければ転送せず止める。
+3. `Backup & Restore`の`System`で本体全体のバックアップを取得し、ローカル・非公開共有ストレージなど
+   **repo外**へ保全する。保存ファイルの存在を確かめてから先へ進む。
+4. `Backup & Restore → Projects`で、**使用中でないと現物確認できたproject番号だけ**を選び、
+   `Upload`で完成EP projectを入れる。告知の“new project”は空き枠へ入れる手順として扱う。
+   [公式サポート](https://support.teenage.engineering/hc/en-us/articles/11639171890204-how-to-use-the-EP-sample-tool)のとおり、
+   Uploadは選択枠を書き換える操作で、空き枠の自動選択ではない。
+
+**空きが不明、既存データへの上書きになる、認識に失敗する場合は中止する。**
+取り込みにFactory ResetやSystem復元を使わない。バックアップがあるだけで上書きを承認したことにしない。
+
+手動チェック（すべて未実施）:
+
+- [ ] 取り込んだ枠でScene 1のPLAYを確認する。
+- [ ] Aを鳴らしたままBのパターンを切り替え、組み合わせを聴く。
+- [ ] 再生を止めて同一本体を別PCへ差し替え、同じproject番号・音を確認する（再Uploadしない）。
+
+自作素材はこの完成projectとは別の未使用枠で扱う。完成mixのステレオWAV 1本と、別パッドで足す音は区別する。
+元マルチトラックがある場合は同じ開始位置・同長のステムを別に用意できるが、完成mixから元マルチが戻るとはしない。
+小WAVの準備は[既存の転送パック導線](WORKER-GAMING-RUNBOOK.md#standard-jobs)を使う。
+個人のPC名・資産名・Drive URL・実配線や音源は、この公開手順へ記録しない。
+
 ## Capture choices
 
 ### USB audio capture candidate
