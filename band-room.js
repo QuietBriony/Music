@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-279-echo-dialogue";
-  const BANDROOM_RELEASE_VERSION = "v449";
+  const BANDROOM_APP_VERSION = "br-280-echo-reply";
+  const BANDROOM_RELEASE_VERSION = "v450";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -626,6 +626,60 @@
       turn:66.5, prompt:"リフの切れ目で、ドラムを一度。", closing:["vocals",83.64], end:87}
   };
   const stemEchoNames = {vocals:"歌", other:"ギター", drums:"ドラム"};
+  const echoDrafts = new Map();
+  const echoHitLimit = 64;
+  const echoPhraseKey = song => "music-band-room-echo-reply-v1:" + song;
+  function readEchoPhrase(song) {
+    const cue = stemEchoCues[song];
+    if (!cue) return null;
+    try {
+      const phrase = JSON.parse(safeLocalStorageGet(echoPhraseKey(song)));
+      const hits = phrase?.hits;
+      if (phrase?.version !== 1 || phrase.song !== song || !Array.isArray(hits) ||
+          !hits.length || hits.length > echoHitLimit) return null;
+      const lengthMs = Math.round((cue.closing[1] - cue.turn) * 1000);
+      let previous = 0;
+      for (const hit of hits) {
+        if (!Array.isArray(hit) || hit.length !== 2) return null;
+        const [part, ms] = hit;
+        if (typeof part !== "string" || !Object.hasOwn(stemEchoNames, part) || !Number.isInteger(ms) ||
+            ms < previous || ms >= lengthMs) return null;
+        previous = ms;
+      }
+      return hits;
+    } catch { return null; }
+  }
+  function syncEchoReplyButtons() {
+    const song = state.currentSongId, saved = readEchoPhrase(song), draft = echoDrafts.get(song);
+    const save = $("br-echo-save"), replay = $("br-echo-replay");
+    save.hidden = !draft?.length;
+    if (!save.hidden) save.textContent = `返しを${saved ? "上書き" : "保存"}（${draft.length}打）`;
+    replay.hidden = !saved;
+    replay.disabled = !state.songData || state.starting;
+    const recalling = !!stemEchoDialogue?.replayEffects;
+    replay.setAttribute("aria-pressed", String(recalling));
+    if (saved) replay.textContent = recalling ? "返しの再生を終える" : `▶ 保存した返し（${saved.length}打）`;
+  }
+  function saveEchoReply() {
+    const song = state.currentSongId, hits = echoDrafts.get(song);
+    if (!stemEchoAvailable() || !hits?.length) return;
+    const raw = JSON.stringify({version:1, song, hits});
+    const ok = safeLocalStorageSet(echoPhraseKey(song), raw) && safeLocalStorageGet(echoPhraseKey(song)) === raw;
+    if (ok) echoDrafts.delete(song);
+    syncEchoReplyButtons();
+    $("br-echo-status").textContent = ok ? `この端末に返しを保存しました（${hits.length}打）。` : "保存できませんでした。この画面でもう一度保存できます。";
+  }
+  function captureEchoReply(part, at) {
+    if (!stemEchoDialogue || stemEchoDialogue.replayEffects) return "";
+    const {cue, clock, hits} = stemEchoDialogue;
+    const position = clock.offset + (at - clock.at) * clock.rate;
+    if (position < cue.turn || position >= cue.closing[1]) return "";
+    if (hits.length === echoHitLimit) return `。保存できるのは最初の${echoHitLimit}打までです。`;
+    hits.push([part, Math.floor((position - cue.turn) * 1000)]);
+    echoDrafts.set(state.currentSongId, hits);
+    syncEchoReplyButtons();
+    return ` · 返し ${hits.length}打`;
+  }
   function stemEchoAvailable() {
     return currentMode === "stems" && state.currentBandId === "tabasco" && ["blend", "dub"].includes(originalMastering);
   }
@@ -640,11 +694,13 @@
   function endStemEchoDialogue() {
     if (!stemEchoDialogue) return;
     stemEchoDialogue.effects.dispose();
+    stemEchoDialogue.replayEffects?.dispose();
     stemEchoDialogue = null;
     const button = $("br-echo-duet");
     button.setAttribute("aria-pressed", "false");
     button.textContent = "▶ 掛け合いで遊ぶ";
     $("br-echo-phase").hidden = true;
+    syncEchoReplyButtons();
   }
   function updateStemEchoDialogue() {
     if (!stemEchoDialogue) return;
@@ -657,7 +713,7 @@
     }
     let message = "お手本 · " + cue.phrase;
     if (position >= cue.closing[1]) message = "締め · " + stemEchoNames[cue.closing[0]];
-    else if (position >= cue.turn) message = "あなたの番 · " + cue.prompt;
+    else if (position >= cue.turn) message = stemEchoDialogue.replayEffects ? "保存した返し · パッドを重ねて弾けます。" : "あなたの番 · " + cue.prompt;
     const phase = $("br-echo-phase");
     if (phase.textContent !== message) phase.textContent = message;
   }
@@ -690,17 +746,20 @@
     duet.hidden = demo.hidden = !cue;
     if (cue) demo.textContent = `▶ お手本　${formatPlaybackTime(cue.start)}から ${cue.phrase}`;
     duet.disabled = demo.disabled = !state.songData || state.starting || playState === "starting";
+    syncEchoReplyButtons();
     for (const button of host.querySelectorAll("[data-stem-echo]")) button.disabled = playState !== "playing";
     if (playState !== "playing" || host.hidden) $("br-echo-status").textContent = "";
   }
-  async function performStemEcho(part, dialogue = false) {
+  async function performStemEcho(part, dialogue = false, replay = false) {
     if (!stemEchoAvailable() || state.starting || playbackSelectionTransitionInFlight()) return;
-    if (dialogue && stemEchoDialogue) {
+    if (dialogue && stemEchoDialogue && replay === !!stemEchoDialogue.replayEffects) {
       endStemEchoDialogue();
       $("br-echo-status").textContent = "掛け合いを終了しました。曲はそのまま続きます。";
       return;
     }
     const selection = createPlaybackStartContract(), anchor = stemPlaybackAnchor, cue = stemEchoCues[state.currentSongId];
+    const saved = replay ? readEchoPhrase(state.currentSongId) : null;
+    if (replay && !saved) { syncEchoReplyButtons(); return; }
     const sameSelection = () => playbackStartContractMatches(selection, createPlaybackStartContract());
     const status = $("br-echo-status"), settings = {echo:72, tone:44};
     try {
@@ -709,8 +768,9 @@
       const {createLiveEffects} = await import("./audio/acid-live-fx.mjs?v=2");
       if (!stemEchoAvailable() || !sameSelection() || anchor !== stemPlaybackAnchor || state.starting) return;
       if (part) {
-        throwRecordedEcho(part, settings, createLiveEffects);
-        status.textContent = stemEchoNames[part] + "にエコー";
+        const at = audioClockSeconds() + .012;
+        throwRecordedEcho(part, settings, createLiveEffects, at);
+        status.textContent = stemEchoNames[part] + "にエコー" + captureEchoReply(part, at);
         return;
       }
       if (!cue || !state.songData) return;
@@ -722,10 +782,12 @@
       // Keep the score's scheduled returns independent of live pad retriggers.
       const effects = dialogue ? makeRecordedEchoEffects(createLiveEffects, Tone.getContext().rawContext) : null;
       if (dialogue) {
-        stemEchoDialogue = { cue, clock, effects };
+        const replayEffects = replay ? makeRecordedEchoEffects(createLiveEffects, Tone.getContext().rawContext) : null;
+        stemEchoDialogue = { cue, clock, effects, replayEffects, hits:[] };
         const button = $("br-echo-duet");
-        button.setAttribute("aria-pressed", "true");
-        button.textContent = "掛け合いを終える";
+        button.setAttribute("aria-pressed", String(!replay));
+        button.textContent = replay ? "▶ 掛け合いで遊ぶ" : "掛け合いを終える";
+        syncEchoReplyButtons();
         $("br-echo-phase").hidden = false;
         updateStemEchoDialogue();
       }
@@ -737,10 +799,18 @@
           count++;
         }
       }
-      if (!count) {
+      let replyCount = 0;
+      for (const [voice, ms] of saved || []) {
+        if (!echoPartAudible(voice)) continue;
+        const at = clock.at + (cue.turn + ms / 1000 - clock.offset) / clock.rate;
+        throwRecordedEcho(voice, settings, createLiveEffects, at, stemEchoDialogue.replayEffects);
+        replyCount++;
+      }
+      if (!count && !replyCount) {
         if (dialogue) endStemEchoDialogue();
         status.textContent = "歌・ギター・ドラムのミュートと音量を確認してください。";
-      } else status.textContent = dialogue ? "" : "このフレーズの続きは、パッドで自由に返せます。";
+      } else if (saved && !replyCount) status.textContent = "保存した返しのパートをオンにしてから、もう一度再生してください。";
+      else status.textContent = dialogue ? "" : "このフレーズの続きは、パッドで自由に返せます。";
     } catch (error) {
       if (sameSelection()) {
         if (dialogue) endStemEchoDialogue();
@@ -5276,6 +5346,7 @@
       humanFlyDubSupported,
       acidLiveDiagnostics: () => ({ enabled: acidLiveEnabled, supported: acidLiveSupported(), effects: acidLiveEffects?.diagnostics() || null,
         dialogue: stemEchoDialogue?.effects.diagnostics() || null,
+        reply: stemEchoDialogue?.replayEffects?.diagnostics() || null,
         engine: acidLiveEngine?.diagnostics() || null, state: acidLivePanel?.state() || null }),
       stemPlaybackAnchor: () => stemPlaybackAnchor && { ...stemPlaybackAnchor },
       originalMasteringDiagnostics: () => ({ profile: originalMastering,
@@ -8951,6 +9022,8 @@
     initAcidLiveControls();
     $("br-echo-play")?.addEventListener("click", togglePlay);
     $("br-echo-duet")?.addEventListener("click", () => performStemEcho(null, true));
+    $("br-echo-save")?.addEventListener("click", saveEchoReply);
+    $("br-echo-replay")?.addEventListener("click", () => performStemEcho(null, true, true));
     $("br-echo-demo")?.addEventListener("click", () => performStemEcho());
     for (const button of document.querySelectorAll("[data-stem-echo]")) {
       button.addEventListener("click", () => performStemEcho(button.dataset.stemEcho));

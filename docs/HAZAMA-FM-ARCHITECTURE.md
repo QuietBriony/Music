@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-11-28　Band Room v450（band-room.js?v=br-280、band-room.css?v=br-104、共通PWA hazama-fm-v450）。手動の返しを曲中の相対msで端末に保存。再演はステムの音声時計に合わせ、お手本・手弾きとは独立したエコーを使う。
+
 2026-11-19　Band Room v449（band-room.js?v=br-279、band-room.css?v=br-104、共通PWA hazama-fm-v449）。掛け合いの3か所のエコーを録音と同じクロックに予約。手動パッドと独立した送信先を使い、ミュートとフェーダーは録音パートで共有する。
 
 2026-11-19　Lyric Labは選んだ行を任意の引用として既存の追記に保存する。端末とD1の既存のノート形式を使う。PWA hazama-fm-v448。

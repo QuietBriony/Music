@@ -100,6 +100,48 @@ sandbox.globalThis = sandbox;
 
 vm.runInNewContext(source, sandbox, { filename: "band-room.js" });
 
+// A reply follows the source clock, even at a different tempo. Only an explicit
+// save replaces the last take for that song; failed writes leave the draft usable.
+{
+  const storage = new Map(), buttons = new Map();
+  const scope = {
+    state: {currentSongId:"hey", songData:{}}, stemEchoDialogue:null,
+    safeLocalStorageGet: key => storage.get(key) ?? null,
+    safeLocalStorageSet: (key, value) => { storage.set(key, value); return true; },
+    stemEchoAvailable: () => true,
+    $: id => {
+      if (!buttons.has(id)) buttons.set(id, {setAttribute() {}});
+      return buttons.get(id);
+    }
+  };
+  vm.runInNewContext(source.slice(source.indexOf("  const stemEchoCues ="), source.indexOf("  function stemEchoAvailable()")), scope);
+  const round = {clock:{offset:50, at:10, rate:.8}, cue:{turn:56.5, closing:["drums",74.78]}, hits:[]};
+  scope.stemEchoDialogue = round;
+  const at = second => 10 + (second - 50) / .8;
+  scope.captureEchoReply("other", at(55));
+  scope.captureEchoReply("other", at(56.5));
+  scope.captureEchoReply("drums", at(58));
+  scope.captureEchoReply("vocals", at(75));
+  assert.deepEqual(round.hits.map(hit => Array.from(hit)), [["other",0],["drums",1500]]);
+  scope.saveEchoReply();
+  assert.equal(JSON.stringify(scope.readEchoPhrase("hey")), JSON.stringify(round.hits));
+  assert.equal(scope.readEchoPhrase("electric-sheep"), null);
+  round.replayEffects = {};
+  scope.captureEchoReply("drums", at(59));
+  assert.equal(round.hits.length, 2);
+  round.replayEffects = null;
+  for (let i = 0; i < 65; i++) scope.captureEchoReply("vocals", at(60+i/100));
+  assert.equal(round.hits.length, 64);
+  scope.safeLocalStorageSet = () => false;
+  scope.saveEchoReply();
+  assert.equal(buttons.get("br-echo-save").hidden, false);
+  assert.equal(scope.readEchoPhrase("hey").length, 2);
+  for (const invalid of [[["bass",0]], [[["other"],0]], [["drums",-1]], [["other",18280]], [["other",100],["drums",99]]]) {
+    storage.set("music-band-room-echo-reply-v1:hey", JSON.stringify({version:1, song:"hey", hits:invalid}));
+    assert.equal(scope.readEchoPhrase("hey"), null);
+  }
+}
+
 // Noise-floor cleanup is evidence-bound and only removes short detections at
 // the old velocity floor. Never retime/repitch the surviving performance.
 {
@@ -209,8 +251,8 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-279-echo-dialogue", "Band Room should expose the current app version");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v449", "Band Room should expose the current user-facing release version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-280-echo-reply", "Band Room should expose the current app version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v450", "Band Room should expose the current user-facing release version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const performanceBpm = windowMock.BandRoomTestHooks.transcribedPerformanceBpm;
 const originalCeiling = windowMock.BandRoomTestHooks.originalOutputCeiling;
@@ -856,13 +898,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-104/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-279/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-280/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-104/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-279/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-280/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");
