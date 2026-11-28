@@ -162,6 +162,12 @@ Do not harvest by default:
 
 ### Current observation
 
+The observations below describe the options as of 2026-05-10. The
+[2026-10-01 decision](#current-decision--2026-10-01) formally archived `namima-lab`.
+Resume in [QuietBriony/namima’s organic pluck recipe](https://github.com/QuietBriony/namima/blob/main/docs/organic-pluck-lab-recipe.md#5-adopted--deferred--rejected-matrix).
+It records the lingering air pad as an adopted concept, v2 PluckSynth settings as
+deferred for runtime use, and the dark v3 sound as rejected.
+
 - `namima-lab` is no longer the primary active music runtime.
 - It is a possible staging/lab area for `namima`, or an archive candidate after
   useful ideas are harvested.
@@ -229,7 +235,9 @@ Low / do not copy:
 
 - `chill` can remain harvest-only / possible light surface.
 - `test` can remain archive candidate after useful ideas are captured.
-- `namima-lab` can remain staging / harvest-only for namima-safe lineage.
+- Staging was an option for `namima-lab` on 2026-05-10. The
+  [2026-10-01 decision](#current-decision--2026-10-01) archived the lab and points
+  to the recipe maintained in `QuietBriony/namima`.
 - Archive means not primary runtime, not no value.
 - Changing a repo from harvest-only or archive candidate to active runtime needs
   separate human approval.
