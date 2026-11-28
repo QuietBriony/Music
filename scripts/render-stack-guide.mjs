@@ -17,24 +17,19 @@ const sourceHref = ({ repo, path }) => `https://github.com/QuietBriony/${repo}/b
 export function renderPublicHtml(catalog) {
   const navigation = catalog.public_navigation;
   const stepHref = (step) => step.href || catalog.tools.find(tool => tool.id === step.tool_id).href;
-  return `<div class="play-paths" aria-labelledby="play-paths-title">
-  <h3 id="play-paths-title">今日は、どんな音で遊ぶ？</h3>
-  <p class="guide-note">打感、余韻、間、意外な返し。気になるところから一つ。</p>
+  return `<div class="play-paths" id="play-paths-title">
   <div class="path-grid">
 ${navigation.play_paths.map(path => `    <article class="play-path" data-play-path="${escapeHtml(path.id)}">
-      <p class="path-feel">${escapeHtml(path.feel)}</p>
-      <h4>${escapeHtml(path.title)}</h4>
-      <p>${escapeHtml(path.first)}</p>
-      <div class="path-actions">${path.steps.map(step => `<a href="${escapeHtml(stepHref(step))}">${escapeHtml(step.label)} <span aria-hidden="true">→</span></a>`).join("")}</div>
+      <h3><a class="path-primary" href="${escapeHtml(stepHref(path.steps[0]))}"><span>${escapeHtml(path.title)}</span><small>${escapeHtml(path.steps[0].label)} <span aria-hidden="true">→</span></small></a></h3>
+      <details><summary>曲・使い方</summary>
+        <p>${escapeHtml(path.first)}</p>
+        <div class="path-actions">${path.steps.slice(1).map(step => `<a href="${escapeHtml(stepHref(step))}">${escapeHtml(step.label)} <span aria-hidden="true">→</span></a>`).join("")}</div>
+      </details>
     </article>`).join("\n")}
   </div>
   <p class="keep-moment">いい瞬間ができたら、<a href="lyric-lab.html">Lyric Labで作品メモを残す</a>。次に試すことは<a href="https://quietbriony.github.io/openclaw/">Deskで一つ決める</a>。</p>
 </div>
-<div class="bookmark-panel">
-  <strong>いつも戻るのは、このページ。</strong>
-  <a href="${escapeHtml(navigation.bookmark)}">${escapeHtml(navigation.bookmark.replace("https://", ""))}</a>
-  <p>ここをブックマークすれば、作品も道具も同じ入口から辿れます。</p>
-</div>
+<h2 id="public-tools">アプリ一覧</h2>
 ${navigation.groups.map((group) => `<div class="public-box" data-public-box="${escapeHtml(group.id)}">
   <h3>${escapeHtml(group.title)}</h3>
   <p class="guide-note">${escapeHtml(group.note)}</p>
@@ -53,7 +48,7 @@ export function renderPublicMarkdown(catalog) {
   const navigation = catalog.public_navigation;
   return `普段のブックマークは [Music Stack Listen](${navigation.bookmark})。公開先を増やさず、既存のページと道具をここから辿ります。
 
-### 今日は、どんな音で遊ぶ？
+### 音で選ぶ
 
 ${navigation.play_paths.map(path => `- **${mdText(path.title)}** — ${mdText(path.feel)} ${mdText(path.first)} ${path.steps.map(step => `[${mdText(step.label)}](${docHref(step.href || catalog.tools.find(tool => tool.id === step.tool_id).href)})`).join(" → ")}`).join("\n")}
 

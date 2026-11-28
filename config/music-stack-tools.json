@@ -76,13 +76,13 @@
     "play_paths": [
       {
         "id": "live",
-        "title": "バンドの芯を聴く",
+        "title": "バンド練習",
         "feel": "打感と、部屋の余韻。",
         "first": "Human Flyのライブ原音から。仕上げを切り替えて、声と楽器の距離を聴く。",
         "steps": [
           {
             "tool_id": "band-room",
-            "label": "原音を聴く",
+            "label": "Human Fly 原音",
             "href": "band-room.html?band=tabasco&song=human-fly&mode=original"
           },
           {
@@ -99,14 +99,14 @@
       },
       {
         "id": "dub",
-        "title": "反響で、会話する",
+        "title": "ダブ・エコー",
         "feel": "低音を残して、声とギターを遠くへ。",
         "first": "Human Flyは「Dub／Acidを聴く」から3つのアレンジへ。Electric Sheepは0:59から「掛け合いで遊ぶ」。リフにドラムで返し、「今の返し」で間を聴いてから保存できます。",
         "steps": [
           {
             "tool_id": "band-room",
-            "label": "Dub／Acidの曲アレンジへ",
-            "href": "band-room.html?band=tabasco&song=human-fly&mode=stems"
+            "label": "Human Fly アレンジ",
+            "href": "band-room.html?band=tabasco&song=human-fly&mode=stems#br-acid-live"
           },
           {
             "tool_id": "band-room",
@@ -121,13 +121,13 @@
       },
       {
         "id": "acid",
-        "title": "つまみから、景色を変える",
+        "title": "テクノ・303",
         "feel": "反復の中に、小さな事件。",
         "first": "試奏台で再生し、明るさを一つ動かす。気に入った音を固定してから、別のパートを変える。",
         "steps": [
           {
             "tool_id": "strudel-workbench",
-            "label": "アシッドを鳴らす",
+            "label": "ライブセットを開く",
             "href": "https://music-private-live-workbench.pages.dev/?stage=techno"
           },
           {
@@ -142,13 +142,13 @@
       },
       {
         "id": "water",
-        "title": "触って、間を楽しむ",
+        "title": "静かな音",
         "feel": "ひとふし弾いて、こだまを待つ。",
         "first": "Namimaをなぞって手を離す。響きがほどけたら、chillのピアノでひと息。",
         "steps": [
           {
             "tool_id": "namima",
-            "label": "水面で遊ぶ"
+            "label": "Namimaの水面へ"
           },
           {
             "tool_id": "chill",

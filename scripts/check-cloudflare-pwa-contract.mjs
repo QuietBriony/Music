@@ -147,7 +147,7 @@ for (const [request, db] of [
   assert.equal(await response.text(), "Lyric draft API failed.");
 }
 
-function loadServiceWorkerHarness(cacheKeys) {
+function loadServiceWorkerHarness(cacheKeys, options = {}) {
   const listeners = new Map();
   const deleted = [];
   const opened = [];
@@ -164,7 +164,8 @@ function loadServiceWorkerHarness(cacheKeys) {
       opened.push(key);
       return {
         async add() {},
-        async put() {}
+        async put(key, response) { options.documents?.set(key.url || key, response); },
+        async match(key) { return options.documents?.get(key.url || key)?.clone(); }
       };
     },
     async match() {
@@ -173,6 +174,7 @@ function loadServiceWorkerHarness(cacheKeys) {
   };
   const self = {
     location: { origin: "https://quietbriony.github.io" },
+    registration: { scope: ROOT_URL },
     clients: { async claim() {} },
     async skipWaiting() {},
     addEventListener(type, listener) {
@@ -187,7 +189,7 @@ function loadServiceWorkerHarness(cacheKeys) {
     URL,
     caches,
     console,
-    fetch: async () => new Response("network"),
+    fetch: options.fetch || (async () => new Response("network")),
     self,
     setTimeout,
     clearTimeout
@@ -199,6 +201,36 @@ function loadServiceWorkerHarness(cacheKeys) {
 const swSource = readFileSync("sw.js", "utf8");
 const version = swSource.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 assert.ok(version, "Service worker should expose a hazama-fm-vN version");
+
+{
+  const documents = new Map();
+  let online = true, networkResponse = new Response("band", {headers:{"Content-Type":"text/html"}});
+  const harness = loadServiceWorkerHarness([], {documents, fetch:async () => {
+    if (!online) throw new TypeError("offline");
+    return networkResponse.clone();
+  }});
+  async function navigate(path) {
+    let response;
+    const writes = [];
+    harness.listeners.get("fetch")({
+      request:new Request(ROOT_URL + path, {headers:{Accept:"text/html"}}),
+      respondWith(value) { response = value; }, waitUntil(value) { writes.push(value); }
+    });
+    const result = await response;
+    await Promise.all(writes);
+    return result;
+  }
+  await navigate("band-room?song=hey");
+  await navigate("band-room.html?song=sister");
+  assert.deepEqual([...documents.keys()], [ROOT_URL+"band-room.html"]);
+  networkResponse = new Response("unavailable", {status:503, headers:{"Content-Type":"text/html"}});
+  assert.equal((await navigate("band-room.html")).status, 503);
+  networkResponse = new Response("private", {headers:{"Content-Type":"text/html","Cache-Control":"no-store"}});
+  await navigate("band-room.html?song=hey");
+  online = false;
+  assert.equal(await (await navigate("band-room?song=electric-sheep")).text(), "band");
+  assert.equal((await navigate("nested/band-room")).status, 503);
+}
 
 {
   const currentStatic = `${version}-static`;

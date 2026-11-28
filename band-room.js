@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-281-echo-audition";
-  const BANDROOM_RELEASE_VERSION = "v451";
+  const BANDROOM_APP_VERSION = "br-282-offline-navigation";
+  const BANDROOM_RELEASE_VERSION = "v452";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -11990,7 +11990,29 @@
     console.info("[Band Room] boot", window.BandRoomBoot);
   }
 
+  // Song-specific panels are hidden when the browser first resolves a fragment.
+  // Follow it once after boot, unless the listener has already moved on.
+  function prepareLinkedPanel() {
+    const hash = window.location.hash;
+    if (!["#br-stem-echo", "#br-acid-live"].includes(hash) ||
+        performance.getEntriesByType?.("navigation")[0]?.type === "back_forward") return null;
+    const interaction = new AbortController();
+    for (const type of ["pointerdown", "wheel", "keydown"]) {
+      window.addEventListener(type, () => interaction.abort(), {once:true, passive:true, signal:interaction.signal});
+    }
+    return () => {
+      if (interaction.signal.aborted) return;
+      interaction.abort();
+      const panel = $(hash.slice(1));
+      if (window.location.hash === hash && panel?.getClientRects().length) {
+        panel.scrollIntoView({block:"start"});
+        panel.focus({preventScroll:true});
+      }
+    };
+  }
+
   window.addEventListener("DOMContentLoaded", async () => {
+    const followPanel = prepareLinkedPanel();
     const storageStatus = applyBandRoomStorageBootPolicy();
     bindUI();
     updateBootDiagnostics(storageStatus);
@@ -12111,6 +12133,7 @@
     }
     if (new URLSearchParams(window.location.search).get("mix") === "dub" &&
         humanFlyDubSupported() && currentMode === "stems") setOriginalMastering("dub", true);
+    followPanel?.();
 
     // Global save hook — any input/change anywhere in main triggers a
     // debounced write. Doesn't fire for child elements of #br-lyrics

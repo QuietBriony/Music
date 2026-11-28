@@ -2947,7 +2947,8 @@ html[data-br-surface="original"] :is(#br-master-vol-bar, #br-help-toggle, #br-kb
 #br-acid-live, #br-stem-echo { padding:16px; margin:16px 0; border:1px solid var(--panel-border); border-radius:12px; background:var(--panel); }
 #br-acid-live[hidden], #br-acid-controls[hidden], #br-stem-echo[hidden], #br-echo-demo[hidden], #br-echo-duet[hidden], #br-echo-phase[hidden], .br-acid-open #br-stem-echo { display:none !important; }
 #br-acid-live button, #br-stem-echo button { min-height:44px; padding:8px 12px; border:1px solid var(--panel-border); border-radius:8px; background:var(--bg); color:var(--text); cursor:pointer; }
-#br-stem-echo { scroll-margin-top:100px; }
+.br-listen-link { display:inline-flex; align-items:center; min-height:44px; margin-inline-end:12px; color:var(--air-soft); font-size:.85rem; }
+#br-stem-echo, #br-acid-live { scroll-margin-top:100px; }
 .br-echo-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; }
 #br-echo-play { flex:none; }
 #br-stem-echo .br-acid-actions button { flex:1 0 72px; max-width:150px; font-weight:600; }

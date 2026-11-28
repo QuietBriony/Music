@@ -105,6 +105,10 @@ function validate(data) {
         const destination = new URL(step.href, base);
         const canonical = new URL(tool.href, base);
         assert.equal(destination.origin + destination.pathname, canonical.origin + canonical.pathname, "Play paths may vary a known app query, not invent a destination");
+        if (!step.href.startsWith("https://") && destination.hash) {
+          const page = step.href.split(/[?#]/)[0];
+          assert.ok(read(page).includes(`id="${destination.hash.slice(1)}"`), `Missing play panel: ${step.href}`);
+        }
       }
     }
   }
@@ -174,6 +178,7 @@ for (const mutate of [
   (data) => { data.public_navigation.groups[0].tool_ids.push(data.public_navigation.groups[0].tool_ids[0]); },
   (data) => { data.public_navigation.play_paths[0].steps[0].tool_id = "unknown-app"; },
   (data) => { data.public_navigation.play_paths[0].steps[0].href = "https://music-stack.pages.dev/new-portal.html"; },
+  (data) => { data.public_navigation.play_paths[0].steps[0].href = "band-room.html#missing-panel"; },
   (data) => { data.public_navigation.play_paths.push(data.public_navigation.play_paths[0]); }
 ]) {
   const fixture = structuredClone(catalog);

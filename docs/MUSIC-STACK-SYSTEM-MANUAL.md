@@ -30,12 +30,12 @@ mainへのmergeだけではMusicのCloudflare手動配信は更新されない�
 <!-- public-pages:begin -->
 普段のブックマークは [Music Stack Listen](https://music-stack.pages.dev/listen.html)。公開先を増やさず、既存のページと道具をここから辿ります。
 
-### 今日は、どんな音で遊ぶ？
+### 音で選ぶ
 
-- **バンドの芯を聴く** — 打感と、部屋の余韻。 Human Flyのライブ原音から。仕上げを切り替えて、声と楽器の距離を聴く。 [原音を聴く](../band-room.html?band=tabasco&song=human-fly&mode=original) → [一人抜いて演奏する](../band-room.html?band=tabasco&song=human-fly&mode=stems) → [Heyで歌とギターを掛け合う](../band-room.html?band=tabasco&song=hey&mode=stems#br-stem-echo)
-- **反響で、会話する** — 低音を残して、声とギターを遠くへ。 Human Flyは「Dub／Acidを聴く」から3つのアレンジへ。Electric Sheepは0:59から「掛け合いで遊ぶ」。リフにドラムで返し、「今の返し」で間を聴いてから保存できます。 [Dub／Acidの曲アレンジへ](../band-room.html?band=tabasco&song=human-fly&mode=stems) → [Electric Sheepでリフに返す](../band-room.html?band=tabasco&song=electric-sheep&mode=stems#br-stem-echo) → [リズムだけを掘る](https://quietbriony.github.io/drum-floor/)
-- **つまみから、景色を変える** — 反復の中に、小さな事件。 試奏台で再生し、明るさを一つ動かす。気に入った音を固定してから、別のパートを変える。 [アシッドを鳴らす](https://music-private-live-workbench.pages.dev/?stage=techno) → [音の密度を探る](../index.html) → [ラジオに任せる](../fm.html)
-- **触って、間を楽しむ** — ひとふし弾いて、こだまを待つ。 Namimaをなぞって手を離す。響きがほどけたら、chillのピアノでひと息。 [水面で遊ぶ](https://quietbriony.github.io/namima/) → [ピアノでひと息](https://quietbriony.github.io/chill/session.html)
+- **バンド練習** — 打感と、部屋の余韻。 Human Flyのライブ原音から。仕上げを切り替えて、声と楽器の距離を聴く。 [Human Fly 原音](../band-room.html?band=tabasco&song=human-fly&mode=original) → [一人抜いて演奏する](../band-room.html?band=tabasco&song=human-fly&mode=stems) → [Heyで歌とギターを掛け合う](../band-room.html?band=tabasco&song=hey&mode=stems#br-stem-echo)
+- **ダブ・エコー** — 低音を残して、声とギターを遠くへ。 Human Flyは「Dub／Acidを聴く」から3つのアレンジへ。Electric Sheepは0:59から「掛け合いで遊ぶ」。リフにドラムで返し、「今の返し」で間を聴いてから保存できます。 [Human Fly アレンジ](../band-room.html?band=tabasco&song=human-fly&mode=stems#br-acid-live) → [Electric Sheepでリフに返す](../band-room.html?band=tabasco&song=electric-sheep&mode=stems#br-stem-echo) → [リズムだけを掘る](https://quietbriony.github.io/drum-floor/)
+- **テクノ・303** — 反復の中に、小さな事件。 試奏台で再生し、明るさを一つ動かす。気に入った音を固定してから、別のパートを変える。 [ライブセットを開く](https://music-private-live-workbench.pages.dev/?stage=techno) → [音の密度を探る](../index.html) → [ラジオに任せる](../fm.html)
+- **静かな音** — ひとふし弾いて、こだまを待つ。 Namimaをなぞって手を離す。響きがほどけたら、chillのピアノでひと息。 [Namimaの水面へ](https://quietbriony.github.io/namima/) → [ピアノでひと息](https://quietbriony.github.io/chill/session.html)
 
 いい瞬間は[Lyric Lab](../lyric-lab.html)で作品メモへ。次の一手は[Desk](https://quietbriony.github.io/openclaw/)で一つ決める。
 

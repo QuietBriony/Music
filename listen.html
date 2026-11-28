@@ -396,25 +396,23 @@
     .yearbook h3 { margin: 6px 0; font-size: 1rem; line-height: 1.65; }
     .yearbook p { margin: 6px 0; color: var(--muted); font-size: .88rem; line-height: 1.8; }
     .yearbook a { text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
-    .bookmark-panel { padding: 18px; border: 1px solid var(--cyan); border-radius: 8px; background: var(--panel-strong); }
-    .play-paths { padding:24px 0 10px; }
-    .play-paths > h3 { font-size:clamp(1.4rem,4vw,2.1rem); font-weight:600; margin:0; }
-    .path-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:20px 0; }
-    .play-path { --path-color:var(--cyan); position:relative; padding:24px; border:1px solid var(--line); border-top:3px solid var(--path-color); border-radius:12px; background:linear-gradient(145deg,rgba(27,62,69,.64),var(--panel)); min-width:0; }
+    .path-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); align-items:start; gap:12px; margin:16px 0; }
+    .play-path { --path-color:var(--cyan); padding:0 14px; border:1px solid var(--line); border-top:3px solid var(--path-color); border-radius:12px; background:linear-gradient(145deg,rgba(27,62,69,.64),var(--panel)); min-width:0; }
     .play-path[data-play-path="dub"] { --path-color:var(--amber); }
     .play-path[data-play-path="acid"] { --path-color:var(--rose); }
     .play-path[data-play-path="water"] { --path-color:var(--blue); }
-    .play-path h4 { font-size:1.35rem; margin:8px 0 14px; font-weight:650; }
+    .play-path h3 { margin:0; font-size:1.14rem; }
+    .path-primary { display:grid; gap:6px; padding:16px 0 12px; }
+    .path-primary small { color:var(--path-color); font-size:.83rem; font-weight:500; }
+    .play-path summary { border-top:1px solid var(--line); color:var(--muted); cursor:pointer; min-height:44px; padding:12px 0; font-size:.82rem; }
+    .play-path details[open] { padding-bottom:10px; }
     .play-path p { color:var(--muted); font-size:.88rem; line-height:1.8; margin:0; }
-    .play-path .path-feel { color:var(--path-color); font-size:.8rem; }
-    .path-actions { display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:16px; }
+    .path-actions { display:grid; gap:4px; margin-top:8px; }
     .path-actions a { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; border-bottom:1px solid var(--path-color); font-size:.85rem; }
     .path-actions a:hover { color:var(--path-color); }
     .keep-moment { font-size:.85rem; color:var(--muted); line-height:1.9; }
     .keep-moment a { color:var(--cyan); text-decoration:underline; text-underline-offset:4px; }
-    @media (max-width:560px) { .path-grid { grid-template-columns:1fr; } .play-path { padding:20px; } .play-paths { padding-top:12px; } }
-    .bookmark-panel strong, .bookmark-panel a { display: block; line-height: 1.7; }
-    .bookmark-panel a { color: var(--cyan); overflow-wrap: anywhere; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; padding: 8px 0; }
+    @media (max-width:760px) { .path-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; } .play-path { padding-inline:10px; } }
     .bookmark-panel p { color: var(--muted); margin: 0; font-size: .85rem; line-height: 1.7; }
     .public-box { margin-top: 22px; }
     .public-box h3 { margin: 0; font-size: 1rem; line-height: 1.6; }
@@ -468,18 +466,17 @@
   <div class="shell">
     <header>
       <div>
-        <p class="eyebrow">REMEMBER / PLAY / KEEP</p>
         <h1>Music Stack</h1>
-        <p class="subtitle">バンド、ラジオ、テクノ、静かな音。<br>使う道具も、前に作った音も、この入口から。</p>
+        <p class="subtitle">バンドの録音、ブラウザ楽器、これまでの作品。</p>
       </div>
-      <nav class="top-actions" aria-label="Primary pages">
-        <a href="#public-pages">公開ページ一覧</a>
-        <a href="#return-here">続きから</a>
+      <nav class="top-actions" aria-label="作品と道具を探す">
+        <a href="#recorded-works">録音を聴く</a>
+        <a href="#public-tools">アプリ一覧</a>
         <details class="top-more"><summary>探す・振り返る</summary>
+        <a href="#return-here">練習・制作ノート</a>
         <a href="#collection-map">全体を把握</a>
         <a href="#play-by-style">ジャンル・フォルダ</a>
         <a href="#yearbook">年鑑・索引</a>
-        <a href="#recorded-works">前の音を聴く</a>
         <a href="#start-here">今すぐ遊ぶ</a>
         </details>
       </nav>
@@ -487,44 +484,42 @@
 
     <main>
     <section id="public-pages" aria-labelledby="public-pages-title">
-      <div class="section-head"><h2 id="public-pages-title">公開ページ一覧</h2><p class="section-note">気分から選んで、そのまま開く。</p></div>
+      <div class="section-head"><h2 id="public-pages-title">音で選ぶ</h2></div>
 <!-- public-pages:begin -->
-<div class="play-paths" aria-labelledby="play-paths-title">
-  <h3 id="play-paths-title">今日は、どんな音で遊ぶ？</h3>
-  <p class="guide-note">打感、余韻、間、意外な返し。気になるところから一つ。</p>
+<div class="play-paths" id="play-paths-title">
   <div class="path-grid">
     <article class="play-path" data-play-path="live">
-      <p class="path-feel">打感と、部屋の余韻。</p>
-      <h4>バンドの芯を聴く</h4>
-      <p>Human Flyのライブ原音から。仕上げを切り替えて、声と楽器の距離を聴く。</p>
-      <div class="path-actions"><a href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=original">原音を聴く <span aria-hidden="true">→</span></a><a href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">一人抜いて演奏する <span aria-hidden="true">→</span></a><a href="band-room.html?band=tabasco&amp;song=hey&amp;mode=stems#br-stem-echo">Heyで歌とギターを掛け合う <span aria-hidden="true">→</span></a></div>
+      <h3><a class="path-primary" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=original"><span>バンド練習</span><small>Human Fly 原音 <span aria-hidden="true">→</span></small></a></h3>
+      <details><summary>曲・使い方</summary>
+        <p>Human Flyのライブ原音から。仕上げを切り替えて、声と楽器の距離を聴く。</p>
+        <div class="path-actions"><a href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">一人抜いて演奏する <span aria-hidden="true">→</span></a><a href="band-room.html?band=tabasco&amp;song=hey&amp;mode=stems#br-stem-echo">Heyで歌とギターを掛け合う <span aria-hidden="true">→</span></a></div>
+      </details>
     </article>
     <article class="play-path" data-play-path="dub">
-      <p class="path-feel">低音を残して、声とギターを遠くへ。</p>
-      <h4>反響で、会話する</h4>
-      <p>Human Flyは「Dub／Acidを聴く」から3つのアレンジへ。Electric Sheepは0:59から「掛け合いで遊ぶ」。リフにドラムで返し、「今の返し」で間を聴いてから保存できます。</p>
-      <div class="path-actions"><a href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">Dub／Acidの曲アレンジへ <span aria-hidden="true">→</span></a><a href="band-room.html?band=tabasco&amp;song=electric-sheep&amp;mode=stems#br-stem-echo">Electric Sheepでリフに返す <span aria-hidden="true">→</span></a><a href="https://quietbriony.github.io/drum-floor/">リズムだけを掘る <span aria-hidden="true">→</span></a></div>
+      <h3><a class="path-primary" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems#br-acid-live"><span>ダブ・エコー</span><small>Human Fly アレンジ <span aria-hidden="true">→</span></small></a></h3>
+      <details><summary>曲・使い方</summary>
+        <p>Human Flyは「Dub／Acidを聴く」から3つのアレンジへ。Electric Sheepは0:59から「掛け合いで遊ぶ」。リフにドラムで返し、「今の返し」で間を聴いてから保存できます。</p>
+        <div class="path-actions"><a href="band-room.html?band=tabasco&amp;song=electric-sheep&amp;mode=stems#br-stem-echo">Electric Sheepでリフに返す <span aria-hidden="true">→</span></a><a href="https://quietbriony.github.io/drum-floor/">リズムだけを掘る <span aria-hidden="true">→</span></a></div>
+      </details>
     </article>
     <article class="play-path" data-play-path="acid">
-      <p class="path-feel">反復の中に、小さな事件。</p>
-      <h4>つまみから、景色を変える</h4>
-      <p>試奏台で再生し、明るさを一つ動かす。気に入った音を固定してから、別のパートを変える。</p>
-      <div class="path-actions"><a href="https://music-private-live-workbench.pages.dev/?stage=techno">アシッドを鳴らす <span aria-hidden="true">→</span></a><a href="index.html">音の密度を探る <span aria-hidden="true">→</span></a><a href="fm.html">ラジオに任せる <span aria-hidden="true">→</span></a></div>
+      <h3><a class="path-primary" href="https://music-private-live-workbench.pages.dev/?stage=techno"><span>テクノ・303</span><small>ライブセットを開く <span aria-hidden="true">→</span></small></a></h3>
+      <details><summary>曲・使い方</summary>
+        <p>試奏台で再生し、明るさを一つ動かす。気に入った音を固定してから、別のパートを変える。</p>
+        <div class="path-actions"><a href="index.html">音の密度を探る <span aria-hidden="true">→</span></a><a href="fm.html">ラジオに任せる <span aria-hidden="true">→</span></a></div>
+      </details>
     </article>
     <article class="play-path" data-play-path="water">
-      <p class="path-feel">ひとふし弾いて、こだまを待つ。</p>
-      <h4>触って、間を楽しむ</h4>
-      <p>Namimaをなぞって手を離す。響きがほどけたら、chillのピアノでひと息。</p>
-      <div class="path-actions"><a href="https://quietbriony.github.io/namima/">水面で遊ぶ <span aria-hidden="true">→</span></a><a href="https://quietbriony.github.io/chill/session.html">ピアノでひと息 <span aria-hidden="true">→</span></a></div>
+      <h3><a class="path-primary" href="https://quietbriony.github.io/namima/"><span>静かな音</span><small>Namimaの水面へ <span aria-hidden="true">→</span></small></a></h3>
+      <details><summary>曲・使い方</summary>
+        <p>Namimaをなぞって手を離す。響きがほどけたら、chillのピアノでひと息。</p>
+        <div class="path-actions"><a href="https://quietbriony.github.io/chill/session.html">ピアノでひと息 <span aria-hidden="true">→</span></a></div>
+      </details>
     </article>
   </div>
   <p class="keep-moment">いい瞬間ができたら、<a href="lyric-lab.html">Lyric Labで作品メモを残す</a>。次に試すことは<a href="https://quietbriony.github.io/openclaw/">Deskで一つ決める</a>。</p>
 </div>
-<div class="bookmark-panel">
-  <strong>いつも戻るのは、このページ。</strong>
-  <a href="https://music-stack.pages.dev/listen.html">music-stack.pages.dev/listen.html</a>
-  <p>ここをブックマークすれば、作品も道具も同じ入口から辿れます。</p>
-</div>
+<h2 id="public-tools">アプリ一覧</h2>
 <div class="public-box" data-public-box="music">
   <h3>Music — バンド・練習・作品棚</h3>
   <p class="guide-note">演奏・練習・作品棚を同じMusicから。ギターと三線は「一音ずつ」で練習できます。</p>
@@ -717,8 +712,8 @@
 
     <section id="workbench-plan" aria-labelledby="workbench-title">
       <div class="section-head"><h2 id="workbench-title">コードと303・909で音を触る</h2><p class="section-note">一つの試奏台に二つの演奏面。</p></div>
-      <p class="guide-note">上の「試作・A/Bミックス」「ライブセット」「元の303×2＋909」で選ぶ。A/Bを重ねてから「このA/Bでライブセットへ」でテンポ・素材コード・音量・クロスを引き継ぎ、追加楽器をMUTE解除で足せます。元のacidBrosは切り替えて使う別エンジンで、音符や音色はStrudelへ自動反映しません。</p>
-      <p class="guide-note">Strudelの9試作棚は従来8作品とAfterimage Synth v1。新しい単曲は128 BPM・256小節（8分）、seed731・曲内master15%を保ち、6打楽器を既存エンジンの合成音へ替えた音色別版です。録音音源は使わず、選択で演奏を停止してコードを開き、明示Playで冒頭から開始します。初回JSON importは不要で、A/B・LIVE素材には使いません。原録音版Afterimage FINAL v1はソースと履歴に保管し、公開ビルドから除外します。作品別LEVELと2デッキ同期ミックスも使えます。別の「303＋909を開く」では、2台の303と11パートの909を16ステップとつまみで演奏。こちらの909用WAVは小さな4本を同じページへ同梱しています。FILEで保存したパッチは試奏台の一覧から再開でき、BPMはボタンで双方向に一回ずつ渡せます。両演奏面の時計・保存形式は別で、切替時に前の演奏を停止します。PCでは同じMusic repoをローカル起動でき、初回に必要な7音を保存すれば従来8試作をオフラインで試せます。旧作品の標準音源は最初の明示Play時に従来URLで準備します。Synth v1の音にはこの録音準備は不要ですが、PCの正式ローカル起動の準備条件は維持します。合成版は3短区間の実音測定で非有限値・クリップ・録音音源GETが0でした。全8分の測定は未完了で、本人の試聴・音色採用・実iPhoneは未確認です。第三者録音の公開・商用権利も未解決です。merge・deployは保留しています。Chrome/Edgeなどのブラウザは必要で、端末間の下書きは自動共有されません。チャットから公開版への即時同期は未実装です。</p>
+      <p class="guide-note">コードや素材を試すなら「試作・A/Bミックス」、自動展開を鳴らすなら「ライブセット」。303と909を直接弾くなら「元の303×2＋909」を開きます。</p>
+      <p class="guide-note">Strudelと303／909を同じテンポで重ねるには「一緒に鳴らす」。気に入ったら「組み合わせを保存」で名前を付け、同じブラウザで呼び戻せます。</p>
       <a class="mini-link" href="https://music-private-live-workbench.pages.dev/?work=afterimage-synth-v1">Afterimage Synth v1の単曲コードを開く →</a>
       <a class="mini-link" href="https://music-private-live-workbench.pages.dev/?work=acid-303-909">Acid 303 / 909を触る →</a>
       <a class="mini-link" href="https://music-private-live-workbench.pages.dev/?module=acidbros">303＋909のステップ画面を開く →</a>

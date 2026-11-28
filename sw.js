@@ -7,7 +7,7 @@
    - Bypasses Range requests (audio streams) and non-GET.
 ========================================================= */
 
-const VERSION = "hazama-fm-v451";
+const VERSION = "hazama-fm-v452";
 const CACHE_PREFIX = "hazama-fm-";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
@@ -28,8 +28,8 @@ const PRECACHE_URLS = [
   "lyric-lab.js?v=notebook-3",
   "lyric-notebook-model.js?v=notebook-3",
   "band-room.html",
-  "band-room.css?v=br-105",
-  "band-room.js?v=br-281",
+  "band-room.css?v=br-106",
+  "band-room.js?v=br-282",
   "audio/acid-live-state.mjs?v=4",
   "audio/acid-live.mjs?v=4",
   "audio/acid-live-panel.mjs?v=5",
@@ -205,6 +205,42 @@ function isHtmlRequest(request) {
          (request.method === "GET" && request.headers.get("accept")?.includes("text/html"));
 }
 
+// The static app document is shared by all song, mode and preset URLs.
+// Pages serves extensionless URLs; the GitHub mirror uses the /Music/ scope.
+const appDocuments = new Set(PRECACHE_URLS.filter(file => !file.includes("/") && file.endsWith(".html")));
+function appDocumentKey(url) {
+  const scope = new URL(self.registration.scope);
+  if (url.origin !== scope.origin || !url.pathname.startsWith(scope.pathname)) return null;
+  const path = url.pathname.slice(scope.pathname.length);
+  const file = !path ? "index.html" : path.endsWith(".html") ? path : path + ".html";
+  return appDocuments.has(file) ? new URL(file, scope).href : null;
+}
+
+async function navigate(event, url) {
+  const { request } = event;
+  const key = appDocumentKey(url);
+  let response;
+  try {
+    response = await fetch(request);
+  } catch {
+    const cache = await caches.open(STATIC_CACHE);
+    const cached = await cache.match(key || request);
+    if (!cached) return new Response("このページはオフラインでは開けません。", {
+      status:503, headers:{"Content-Type":"text/plain; charset=utf-8"}
+    });
+    // A precached .html may have followed a Pages redirect during install.
+    // A navigation with redirect:manual needs a response without that redirect history.
+    return cached.redirected ? new Response(cached.body, cached) : cached;
+  }
+  if (response.ok && response.headers.get("content-type")?.includes("text/html") &&
+      !response.headers.get("cache-control")?.includes("no-store") &&
+      (!response.redirected || (key && appDocumentKey(new URL(response.url)) === key))) {
+    const copy = response.clone();
+    event.waitUntil(caches.open(STATIC_CACHE).then(cache => cache.put(key || request, copy)).catch(() => {}));
+  }
+  return response;
+}
+
 function isPresetRequest(url) {
   return url.pathname.includes("/presets/") && url.pathname.endsWith(".json");
 }
@@ -287,16 +323,8 @@ self.addEventListener("fetch", (event) => {
   if (isApiRequest(url)) return;
 
   // HTML navigation: network-first so new deploys are picked up.
-  if (isHtmlRequest(request)) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(STATIC_CACHE).then((cache) => cache.put(request, copy));
-          return response;
-        })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match("fm.html")))
-    );
+  if (isHtmlRequest(request) && url.origin === self.location.origin) {
+    event.respondWith(navigate(event, url));
     return;
   }
 

@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v451 compact)
+# Band Room - Changelog (v65 -> v452 compact)
+
+## v452 — 2026-11-28
+
+Listenの先頭からバンド練習、ダブ、テクノ、水音を直接選べる。共通PWAの準備後は、曲・モード付きリンクも対応する保存済み画面を開く。 共通PWAは hazama-fm-v452。
 
 ## v451 — 2026-11-28
 
@@ -151,7 +155,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v451. Latest Band Room runtime change: v451 (audition echo replies). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v452. Latest Band Room runtime change: v452 (offline app navigation). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

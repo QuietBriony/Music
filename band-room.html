@@ -7,7 +7,7 @@
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
 <script src="audio/premix-entry.js?v=1"></script>
-<link rel="stylesheet" href="band-room.css?v=br-105" />
+<link rel="stylesheet" href="band-room.css?v=br-106" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -31,7 +31,7 @@
 <script src="audio/dub-arrangement.js?v=4" defer></script>
 <script src="audio/dub-mix.js?v=8" defer></script>
 <script src="audio/stem-live-mix.js?v=10" defer></script>
-<script src="band-room.js?v=br-281" defer></script>
+<script src="band-room.js?v=br-282" defer></script>
 <script type="module" src="audio/premix-preview.mjs?v=15"></script>
 <script type="module" src="audio/physical-band/preview.mjs?v=5"></script>
 <script type="module" src="audio/physical-band/guitar-audition-preview.mjs?v=2"></script>
@@ -127,6 +127,7 @@
     <h1>BAND ROOM</h1>
     <p class="br-brandline">Air Rock Connect Box</p>
     <p class="br-subtitle" id="br-subtitle">loading bands…</p>
+    <a class="br-listen-link" href="listen.html#public-pages">← Listenで音を選ぶ</a>
     <button id="br-update-check" type="button" hidden>更新を確認</button>
     <span id="br-update-status" role="status" aria-live="polite"></span>
     <button id="br-help-toggle" type="button" aria-label="help">?</button>
@@ -212,7 +213,6 @@
       <p id="br-premix-status" role="status" aria-live="polite">曲一覧を準備しています…</p>
       <p class="br-help">原ファイルはそのまま、再生時だけ補正します。強い圧縮や残響の追加はせず、2つの仕上げは曲ごとに音量をそろえて比較できます。元からのにじみ・歪みは残ります。</p>
       <p class="br-help">パートを消して練習するなら「パート別」、採譜した音符を合成音で鳴らすなら「AI再現」。切り替えると停止します。原音はオンラインで1曲ずつ読み込みます。</p>
-      <a href="listen.html">← Listenの一覧へ</a>
     </section>
 
     <!-- ===== CORE (always visible) ===== -->
@@ -296,7 +296,7 @@
       <nav id="br-section-nav" aria-label="Section quick nav"></nav>
     </section>
 
-    <section id="br-stem-echo" hidden aria-label="ライブエコー" data-scope="stems">
+    <section id="br-stem-echo" tabindex="-1" hidden aria-label="ライブエコー" data-scope="stems">
       <div class="br-echo-heading">
         <strong id="br-echo-title">ライブエコー</strong>
         <button type="button" id="br-echo-play" disabled>▶ START</button>
@@ -318,7 +318,7 @@
       <span id="br-echo-status" role="status"></span>
     </section>
 
-    <section id="br-acid-live" hidden aria-label="Human Flyの楽器と声でライブアレンジ" data-scope="stems">
+    <section id="br-acid-live" tabindex="-1" hidden aria-label="Human Flyの楽器と声でライブアレンジ" data-scope="stems">
       <strong>Human Fly · Dub / Acid</strong>
       <p class="br-help">Dub、Acid、両方を組み合わせた3つの曲アレンジ。選ぶと冒頭から再生し、曲の展開と余韻まで自動で進みます。</p>
       <button type="button" id="br-acid-open" aria-expanded="false" aria-controls="br-acid-controls">Dub／Acidを聴く</button>
