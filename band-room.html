@@ -7,7 +7,7 @@
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
 <script src="audio/premix-entry.js?v=1"></script>
-<link rel="stylesheet" href="band-room.css?v=br-104" />
+<link rel="stylesheet" href="band-room.css?v=br-105" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -31,7 +31,7 @@
 <script src="audio/dub-arrangement.js?v=4" defer></script>
 <script src="audio/dub-mix.js?v=8" defer></script>
 <script src="audio/stem-live-mix.js?v=10" defer></script>
-<script src="band-room.js?v=br-280" defer></script>
+<script src="band-room.js?v=br-281" defer></script>
 <script type="module" src="audio/premix-preview.mjs?v=15"></script>
 <script type="module" src="audio/physical-band/preview.mjs?v=5"></script>
 <script type="module" src="audio/physical-band/guitar-audition-preview.mjs?v=2"></script>
@@ -310,8 +310,11 @@
       <button type="button" id="br-echo-demo" hidden></button>
       <button type="button" id="br-echo-duet" aria-pressed="false" hidden>▶ 掛け合いで遊ぶ</button>
       <p id="br-echo-phase" role="status" hidden></p>
-      <button type="button" id="br-echo-save" hidden>返しを保存</button>
-      <button type="button" id="br-echo-replay" aria-pressed="false" hidden>▶ 保存した返し</button>
+      <div class="br-echo-replies">
+        <button type="button" id="br-echo-preview" aria-pressed="false" hidden>▶ 今の返し</button>
+        <button type="button" id="br-echo-replay" aria-pressed="false" hidden>▶ 保存した返し</button>
+        <button type="button" id="br-echo-save" hidden>返しを保存</button>
+      </div>
       <span id="br-echo-status" role="status"></span>
     </section>
 

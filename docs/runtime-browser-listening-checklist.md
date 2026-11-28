@@ -1,5 +1,7 @@
 # Runtime Browser Listening Checklist
 
+Band Room v451 uses band-room.js?v=br-281, band-room.css?v=br-105 and hazama-fm-v451. Compare a new take and a saved reply at both tempos, check that only the selected pads sound, and reload before and after an explicit overwrite.
+
 Band Room v450 uses band-room.js?v=br-280, band-room.css?v=br-104 and hazama-fm-v450. In Hey and Electric Sheep, tap during your turn, save, reload and replay. Check the same musical timing at a different speed, muted pads, STOP and independent per-song replies.
 
 Band Room v449 uses band-room.js?v=br-279, band-room.css?v=br-104 and hazama-fm-v449. Play both dialogues, tap the closing part during your turn, hear the scheduled ending, then check exit, mute, tempo and STOP.

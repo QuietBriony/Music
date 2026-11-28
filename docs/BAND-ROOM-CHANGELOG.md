@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v450 compact)
+# Band Room - Changelog (v65 -> v451 compact)
+
+## v451 — 2026-11-28
+
+HeyとElectric Sheepで新しく弾いた返しを保存前に試聴できます。前の返しがあれば、同じ位置から切り替えて聴き、残したいときだけ上書きできます。 共通PWAは hazama-fm-v451。
 
 ## v450 — 2026-11-28
 
@@ -147,7 +151,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v450. Latest Band Room runtime change: v450 (saved echo replies). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v451. Latest Band Room runtime change: v451 (audition echo replies). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

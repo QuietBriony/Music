@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-11-28　Band Room v451（band-room.js?v=br-281、band-room.css?v=br-105、共通PWA hazama-fm-v451）。未保存テイクがある間は、新旧どちらの試聴も返答区間の1秒前に同じステムをシークし、音声時計に返しを予約する。
+
 2026-11-28　Band Room v450（band-room.js?v=br-280、band-room.css?v=br-104、共通PWA hazama-fm-v450）。手動の返しを曲中の相対msで端末に保存。再演はステムの音声時計に合わせ、お手本・手弾きとは独立したエコーを使う。
 
 2026-11-19　Band Room v449（band-room.js?v=br-279、band-room.css?v=br-104、共通PWA hazama-fm-v449）。掛け合いの3か所のエコーを録音と同じクロックに予約。手動パッドと独立した送信先を使い、ミュートとフェーダーは録音パートで共有する。

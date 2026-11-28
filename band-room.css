@@ -2955,7 +2955,9 @@ html[data-br-surface="original"] :is(#br-master-vol-bar, #br-help-toggle, #br-kb
 #br-stem-echo button:focus-visible { outline:2px solid var(--air-soft); outline-offset:3px; }
 #br-stem-echo button:disabled { opacity:.45; cursor:default; }
 #br-echo-demo, #br-echo-duet { margin:8px 8px 0 0; }
-#br-echo-duet[aria-pressed="true"] { border-color:var(--air); }
+#br-echo-duet[aria-pressed="true"], .br-echo-replies button[aria-pressed="true"] { border-color:var(--air); }
+.br-echo-replies { display:flex; flex-wrap:wrap; gap:6px; }
+.br-echo-replies button:not([hidden]) { margin-top:4px; }
 #br-echo-phase { margin:12px 0 4px; padding-left:10px; border-left:3px solid var(--air); }
 #br-echo-status { font-size:13px; color:var(--text-sub); }
 #br-acid-live button[aria-pressed="true"] { border-color:var(--air); background:rgba(108,209,204,.15); }
